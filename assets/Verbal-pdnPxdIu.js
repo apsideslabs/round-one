@@ -1,1 +1,0 @@
-import{j as r}from"./ui-Cusq77EJ.js";import{Q as t}from"./QuizRound-D5Q4JIAe.js";import{v as o}from"./index-_CGEsncO.js";import"./react-SojlxpzI.js";import"./Explanation-Dc8fFax8.js";import"./motion-RccCmU5N.js";import"./ResultShell-DSDITvmS.js";function n(){return r.jsx(t,{trackId:"verbal",items:o,perQuestion:45})}export{n as default};
