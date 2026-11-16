@@ -26,6 +26,7 @@ Plus **6 guides** (classification, number series, syllogisms, data reasoning, ST
 - **Command palette** — `⌘K` / `Ctrl K` to jump anywhere; `1`–`4` to answer, `↵` for the next question.
 - **Installable PWA** — manifest, maskable icons and a cache-first service worker. Works offline once loaded.
 - **Local-first** — progress lives in `localStorage` through Zustand's persist middleware. No account, no server.
+- **App shell, not a landing page** — a persistent sidebar on desktop (rounds, arcade, guides, XP), a five-tab bottom bar on mobile with a Menu sheet that reaches everything, and a context rail beside each quiz showing progress and scoring.
 - **Route-level code splitting** — the first paint carries React, not the quiz engine.
 
 ## Getting started
@@ -44,9 +45,9 @@ Tailwind's stylesheet is **pre-generated** into `src/generated.css` by `npm run 
 
 ```
 src/
-  components/        UI: AppShell, TopBar, BottomNav, Dial, TrackRow,
-                     QuizRunner, TimerRing, OptionButton, Explanation,
-                     ResultShell, RadarProfile, CommandPalette
+  components/        Shell: AppShell, Sidebar, TopBar, BottomNav, NavSheet,
+                     CommandPalette. UI: Dial, TrackRow, QuizRunner, TimerRing,
+                     OptionButton, Explanation, ResultShell, RadarProfile
   components/ui/     Button, Card, Chip, Progress (Radix + cva primitives)
   data/              Question banks and guide content, typed
   lib/               scoring, effects (audio/confetti/haptics), utils

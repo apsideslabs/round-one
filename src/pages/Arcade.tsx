@@ -17,7 +17,7 @@ export default function Arcade() {
   const gameBests = useProgress((s) => s.gameBests)
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-7 sm:px-8 lg:px-12">
+    <div className="w-full px-4 pb-28 pt-7 sm:px-6 lg:px-8">
       <span className="chip">Arcade</span>
       <h1 className="mt-3 text-balance font-display text-3xl font-extrabold tracking-tighter sm:text-4xl">
         Six drills, each mirroring a real interview task

@@ -10,7 +10,7 @@ import { games } from '@/data/games'
 import { useProgress } from '@/store/progress'
 import { readiness } from '@/lib/scoring'
 
-const shell = 'mx-auto w-full max-w-[1400px] px-4 sm:px-8 lg:px-12'
+const shell = 'w-full px-4 sm:px-6 lg:px-8'
 
 export default function Home() {
   const scores = useProgress((s) => s.scores)
