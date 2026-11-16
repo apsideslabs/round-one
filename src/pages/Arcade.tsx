@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug, Eye } from 'lucide-react'
 import { games } from '@/data/games'
+import { Carousel3D } from '@/components/Carousel3D'
 import { useProgress } from '@/store/progress'
 
 const icons: Record<string, typeof Puzzle> = {
@@ -26,7 +27,24 @@ export default function Arcade() {
         Three train a faculty — deduction, working memory, speed under pressure. Three rehearse an actual interview task: a guesstimate, a prioritisation call, a debugging round. Scores stay separate from your readiness, because a game is a warm-up, not a verdict.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6">
+        <Carousel3D
+          items={games.map((g) => ({
+            id: g.id,
+            title: g.name,
+            tagline: g.tagline,
+            meta: g.skill.split('·')[0].trim(),
+            path: g.path,
+            colour: g.colour,
+            soft: g.soft,
+            ink: g.ink,
+            best: gameBests[g.id]
+          }))}
+        />
+      </div>
+
+      <p className="mono-label mt-6">or pick from the list</p>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {games.map((game) => {
           const Icon = icons[game.id] ?? Puzzle
           const best = gameBests[game.id] ?? 0

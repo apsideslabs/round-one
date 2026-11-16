@@ -9,7 +9,8 @@ import { guides } from '@/data/guides'
 import { games } from '@/data/games'
 import { useProgress } from '@/store/progress'
 import { readiness } from '@/lib/scoring'
-import { currentStreak, lastSeven } from '@/lib/streak'
+import { currentStreak } from '@/lib/streak'
+import { Heatmap } from '@/components/Heatmap'
 import { pct } from '@/lib/utils'
 
 const shell = 'w-full px-4 sm:px-6 lg:px-8'
@@ -27,7 +28,6 @@ export default function Home() {
   const { scores, gameBests, lastRound, days } = useProgress()
   const ready = readiness(scores)
   const streak = currentStreak(days)
-  const week = lastSeven(days)
 
   const weakest = [...tracks].sort((a, b) => pct(scores[a.id] ?? 0, a.max) - pct(scores[b.id] ?? 0, b.max))[0]
   const resume = lastRound ? trackById(lastRound) : weakest
@@ -78,17 +78,13 @@ export default function Home() {
               </span>
             </div>
             <Dial scores={scores} readiness={ready} compact />
-            <div className="mt-3 grid grid-cols-7 gap-1">
-              {week.map((d) => (
-                <span
-                  key={d.key}
-                  className={`grid h-6 place-items-center rounded border-2 border-ink text-[8px] font-bold ${
-                    d.done ? 'bg-c2 text-white' : d.isToday ? 'bg-c3' : 'bg-card text-ink-3'
-                  }`}
-                >
-                  {d.done ? '✓' : d.label}
-                </span>
-              ))}
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <Heatmap days={days} />
+              <span className="mono-label shrink-0 text-right leading-tight">
+                {days.length} day{days.length === 1 ? '' : 's'}
+                <br />
+                practised
+              </span>
             </div>
             <p className="mono-label mt-2 text-center">progress is kept if a day is missed</p>
           </div>
