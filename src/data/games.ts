@@ -34,6 +34,17 @@ export const games: GameMeta[] = [
     how: 'Four pads light up in order. Copy the order. Each success adds one more step — this is the span number interviewers are quietly testing when they ask you to walk them through a project.'
   },
   {
+    id: 'matrix',
+    name: 'Pattern matrix',
+    tagline: 'A 3×3 grid with one tile missing.',
+    skill: 'Visual reasoning · matrix logic',
+    path: '/arcade/matrix',
+    colour: '#2f5bff',
+    soft: '#e0e7ff',
+    ink: '#ffffff',
+    how: 'Raven-style matrices drawn entirely in SVG: shape shifts across each row, count grows down each column, fill alternates. Pick the tile that completes the grid from four near misses — each wrong option differs in exactly one attribute.'
+  },
+  {
     id: 'oddtile',
     name: 'Odd tile',
     tagline: 'One tile in the grid is subtly different.',

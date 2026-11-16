@@ -53,6 +53,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 <Item onSelect={() => go('/arcade/triage')} icon={<Gamepad2 className="h-4 w-4" />} label="Triage" />
                 <Item onSelect={() => go('/arcade/debug')} icon={<Gamepad2 className="h-4 w-4" />} label="Spot the bug" />
                 <Item onSelect={() => go('/arcade/oddtile')} icon={<Gamepad2 className="h-4 w-4" />} label="Odd tile" />
+                <Item onSelect={() => go('/arcade/matrix')} icon={<Gamepad2 className="h-4 w-4" />} label="Pattern matrix" />
               </Command.Group>
 
               <Command.Group heading="Guides">

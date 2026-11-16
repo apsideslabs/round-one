@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug, Eye } from 'lucide-react'
+import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug, Eye, Grid3x3 } from 'lucide-react'
 import { games } from '@/data/games'
 import { Carousel3D } from '@/components/Carousel3D'
 import { useProgress } from '@/store/progress'
@@ -11,7 +11,8 @@ const icons: Record<string, typeof Puzzle> = {
   estimate: Ruler,
   triage: ListOrdered,
   debug: Bug,
-  oddtile: Eye
+  oddtile: Eye,
+  matrix: Grid3x3
 }
 
 export default function Arcade() {
