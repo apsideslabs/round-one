@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import type { Track } from '@/data/tracks'
+import { RoundGlyph } from '@/components/RoundGlyph'
 
 export function TrackRow({ track, best }: { track: Track; best: number }) {
   return (
@@ -10,8 +11,13 @@ export function TrackRow({ track, best }: { track: Track; best: number }) {
       style={{ background: track.colour, color: track.ink }}
     >
       <div className="mx-auto flex w-full max-w-[1400px] items-center gap-5 px-4 py-5 transition-[padding] duration-200 group-hover:pl-6 sm:gap-8 sm:px-8 sm:py-6 lg:px-12 lg:group-hover:pl-16">
-        <span className="font-display text-4xl font-extrabold leading-none tracking-tighter opacity-40 sm:text-5xl lg:text-6xl">
-          {track.no}
+        <span className="flex shrink-0 items-center gap-2 sm:gap-4">
+          <span className="font-display text-3xl font-extrabold leading-none tracking-tighter opacity-35 sm:text-4xl lg:text-5xl">
+            {track.no}
+          </span>
+          <span className="hidden sm:block" style={{ color: track.ink === '#ffffff' ? '#ffffff' : '#12151a' }}>
+            <RoundGlyph id={track.id} colour={track.ink === '#ffffff' ? '#ffffff' : '#12151a'} size={40} />
+          </span>
         </span>
 
         <span className="grid min-w-0 flex-1 gap-1">

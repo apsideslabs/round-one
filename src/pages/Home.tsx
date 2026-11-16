@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Flame, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dial } from '@/components/Dial'
+import { HeroCanvas } from '@/components/HeroCanvas'
 import { TrackRow } from '@/components/TrackRow'
 import { tracks, trackById, QUESTION_COUNT, type TrackId } from '@/data/tracks'
 import { guides } from '@/data/guides'
@@ -40,8 +41,10 @@ export default function Home() {
   return (
     <div className="w-full">
       {/* ---------- the hero, restored ---------- */}
-      <section className="w-full bg-ink text-white">
-        <div className={`${shell} grid items-center gap-8 py-9 lg:grid-cols-[1.1fr_0.9fr] lg:py-14`}>
+      <section className="relative w-full overflow-hidden bg-ink text-white">
+        <HeroCanvas className="pointer-events-auto absolute inset-0 h-full w-full" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_20%_0%,rgba(18,21,26,0.96)_0%,rgba(18,21,26,0.55)_45%,rgba(18,21,26,0)_75%)]" />
+        <div className={`${shell} relative grid items-center gap-8 py-9 lg:grid-cols-[1.1fr_0.9fr] lg:py-14`}>
           <div>
             <span className="chip border-white/35 bg-white/10 text-white">
               <span className="h-2 w-2 rounded-full bg-c1" />

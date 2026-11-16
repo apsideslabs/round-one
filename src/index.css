@@ -130,6 +130,42 @@
   .sheet-in { animation: sheetIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
 }
 
+@keyframes glyphBar {
+  0%, 100% { transform: scaleY(0.55); }
+  50% { transform: scaleY(1); }
+}
+@keyframes glyphFlip {
+  0%, 100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(38deg); }
+}
+@keyframes glyphStack {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes glyphPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.7; }
+}
+@keyframes glyphBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3.5px); }
+}
+@keyframes glyphTilt {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+@layer components {
+  .glyph-bar { transform-origin: 50% 100%; animation: glyphBar 2.4s ease-in-out infinite; }
+  .glyph-flip { animation: glyphFlip 3.2s ease-in-out infinite; }
+  .glyph-stack { animation: glyphStack 2.8s ease-in-out infinite; }
+  .glyph-pulse { animation: glyphPulse 2s ease-in-out infinite; }
+  .glyph-bob { animation: glyphBob 2.2s ease-in-out infinite; }
+  .glyph-tilt { animation: glyphTilt 3.6s ease-in-out infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph-bar, .glyph-flip, .glyph-stack, .glyph-pulse, .glyph-bob, .glyph-tilt { animation: none !important; }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
