@@ -6,7 +6,6 @@ import { games } from '@/data/games'
 import { guides } from '@/data/guides'
 import { useProgress } from '@/store/progress'
 import { setMuted } from '@/lib/fx'
-import { VoicePanel } from '@/components/VoicePanel'
 
 export default function Menu() {
   const { muted, toggleMute, reset, scores, gameBests, lastRound } = useProgress()
@@ -110,18 +109,6 @@ export default function Menu() {
       <section className={`mt-8 ${q ? 'hidden' : ''}`}>
         <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Test</h2>
         <Link
-          to="/room"
-          className="mb-2 flex max-w-[560px] items-center gap-3 rounded-xl border-2 border-ink bg-ink px-3.5 py-3 text-paper shadow-[3px_3px_0_var(--color-ink)]"
-        >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink bg-c1">
-            <ArrowRight className="h-4 w-4" />
-          </span>
-          <span className="grid min-w-0 flex-1 gap-0.5">
-            <span className="text-[14px] font-extrabold">The room · voice round</span>
-            <span className="mono-label text-white/60">question spoken aloud · you answer · delivery scored</span>
-          </span>
-        </Link>
-        <Link
           to="/mock"
           className="flex max-w-[560px] items-center gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-3 shadow-[3px_3px_0_var(--color-ink)]"
         >
@@ -186,7 +173,6 @@ export default function Menu() {
       <section className={`mt-8 max-w-[560px] ${q ? 'hidden' : ''}`}>
         <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Settings</h2>
         <div className="grid gap-2">
-          <VoicePanel />
           <button
             type="button"
             onClick={onSound}
