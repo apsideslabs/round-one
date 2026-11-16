@@ -6,6 +6,7 @@ import { ShareCard } from '@/components/ShareCard'
 import { RadarProfile } from '@/components/RadarProfile'
 import type { Track } from '@/data/tracks'
 import { useProgress } from '@/store/progress'
+import { readiness as readinessOf } from '@/lib/scoring'
 import { pct } from '@/lib/utils'
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
 
 export function ResultShell({ track, score, correct, total, note, onRetry, children }: Props) {
   const scores = useProgress((s) => s.scores)
+  const readiness = readinessOf(scores)
   const percent = pct(score, track.max)
   const headline =
     percent >= 85 ? 'Panel-ready.' : percent >= 65 ? 'Almost there.' : percent >= 40 ? 'The pattern is showing.' : 'Start with the basis.'
@@ -87,7 +89,7 @@ export function ResultShell({ track, score, correct, total, note, onRetry, child
         <Button variant="accent" onClick={onRetry} className="flex-1">
           Run this round again
         </Button>
-        <ShareCard trackName={track.name} colour={track.colour} score={score} max={track.max} correct={correct} total={total} />
+        <ShareCard scores={scores} readiness={readiness} trackName={track.name} correct={correct} total={total} />
         <Button variant="light" asChild className="flex-1">
           <Link to="/">Back to home</Link>
         </Button>

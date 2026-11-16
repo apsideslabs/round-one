@@ -4,6 +4,7 @@ import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
 import { useProgress, level, levelProgress } from '@/store/progress'
+import { Sigil } from '@/components/Sigil'
 import { setMuted } from '@/lib/fx'
 import { cn } from '@/lib/utils'
 
@@ -97,6 +98,16 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t-2 border-ink p-3">
+        <div className="mb-2.5 flex items-center gap-2.5">
+          <span className="shrink-0 text-ink">
+            <Sigil scores={scores} size={40} showRings={false} />
+          </span>
+          <span className="mono-label leading-tight">
+            your mark
+            <br />
+            <span className="text-ink-3">readiness {Math.round(tracks.reduce((a, t) => a + (scores[t.id] ?? 0) / t.max, 0) / tracks.length * 100)}%</span>
+          </span>
+        </div>
         <div className="mb-2 flex items-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-ink bg-c1 font-display text-[11px] font-extrabold text-white">
             {level(xp)}
