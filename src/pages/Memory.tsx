@@ -191,6 +191,11 @@ export default function Memory() {
                   ok={chosen === question.answer}
                   points={POINTS}
                   why={question.why}
+                  options={question.options}
+                  answerIndex={question.answer}
+                  chosenIndex={chosen}
+                  steps={question.steps}
+                  wrong={question.wrong}
                   nextLabel="Continue →"
                   onNext={advance}
                 />

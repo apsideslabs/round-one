@@ -6,7 +6,12 @@ export interface Mcq {
   prompt: string
   options: string[]
   answer: number
+  /** One-line verdict, shown first. */
   why: string
+  /** Worked reasoning for the correct option, step by step. */
+  steps?: string[]
+  /** Why each *wrong* option is wrong, keyed by its index. */
+  wrong?: Record<number, string>
   difficulty: Difficulty
 }
 

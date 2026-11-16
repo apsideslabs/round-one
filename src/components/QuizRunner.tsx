@@ -165,6 +165,11 @@ export function QuizRunner({ track, items, perQuestion, onComplete, onQuit }: Pr
                   ok={chosen === item.answer}
                   points={POINTS}
                   why={item.why}
+                  options={item.options}
+                  answerIndex={item.answer}
+                  chosenIndex={chosen}
+                  steps={item.steps}
+                  wrong={item.wrong}
                   nextLabel={isLast ? 'See the result →' : 'Next question →'}
                   onNext={advance}
                 />

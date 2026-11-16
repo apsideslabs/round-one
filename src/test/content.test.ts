@@ -56,3 +56,17 @@ describe('question banks', () => {
     expect(totalWeight).toBeCloseTo(1, 5)
   })
 })
+
+describe('explanations', () => {
+  it('gives every question a worked method and a reason for each wrong option', () => {
+    for (const q of banks) {
+      expect(q.steps?.length, `${q.id} steps`).toBeGreaterThanOrEqual(2)
+      const wrongKeys = Object.keys(q.wrong ?? {}).map(Number).sort()
+      const expected = q.options.map((_, i) => i).filter((i) => i !== q.answer)
+      expect(wrongKeys, `${q.id} wrong-option coverage`).toEqual(expected)
+      for (const key of wrongKeys) {
+        expect((q.wrong ?? {})[key].length, `${q.id} option ${key}`).toBeGreaterThan(20)
+      }
+    }
+  })
+})
