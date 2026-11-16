@@ -6,12 +6,14 @@ import { Dial } from '@/components/Dial'
 import { TrackRow } from '@/components/TrackRow'
 import { tracks } from '@/data/tracks'
 import { guides } from '@/data/guides'
+import { games } from '@/data/games'
 import { useProgress } from '@/store/progress'
 import { readiness } from '@/lib/scoring'
 import { QUESTION_COUNT } from '@/data/tracks'
 
 export default function Home() {
   const scores = useProgress((s) => s.scores)
+  const gameBests = useProgress((s) => s.gameBests)
   const ready = readiness(scores)
   const roundWord = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][tracks.length] ?? String(tracks.length)
 
@@ -56,6 +58,30 @@ export default function Home() {
       <section className="overflow-hidden rounded-[20px] border-2 border-ink shadow-[5px_5px_0_var(--color-ink)]">
         {tracks.map((t) => (
           <TrackRow key={t.id} track={t} best={scores[t.id]} />
+        ))}
+      </section>
+
+      <div className="mt-8 mb-3 flex items-end justify-between">
+        <h2 className="font-display text-xl font-extrabold tracking-tight">Arcade</h2>
+        <Link to="/arcade" className="mono-label underline decoration-ink/30 underline-offset-4">
+          All games
+        </Link>
+      </div>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        {games.map((game) => (
+          <Link
+            key={game.id}
+            to={game.path}
+            className="group flex flex-col gap-1.5 rounded-2xl border-2 border-ink bg-card p-4 shadow-[3px_3px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5"
+          >
+            <span className="flex items-center justify-between">
+              <span className="h-2.5 w-2.5 rounded-full border-2 border-ink" style={{ background: game.colour }} />
+              <span className="mono-label">{gameBests[game.id] ? `best ${gameBests[game.id]}` : 'new'}</span>
+            </span>
+            <span className="font-display text-lg font-extrabold tracking-tight">{game.name}</span>
+            <span className="text-[13px] font-medium leading-relaxed text-ink-2">{game.tagline}</span>
+          </Link>
         ))}
       </section>
 

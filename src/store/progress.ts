@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { TrackId } from '@/data/tracks'
 
 export type Scores = Record<TrackId, number>
+export type GameBests = Record<string, number>
 
 interface ProgressState {
   scores: Scores
@@ -10,8 +11,10 @@ interface ProgressState {
   attempts: number
   muted: boolean
   lastRound: TrackId | null
+  gameBests: GameBests
   record: (track: TrackId, points: number) => void
   addXp: (points: number) => void
+  recordGame: (game: string, score: number) => void
   toggleMute: () => void
   reset: () => void
 }
@@ -26,6 +29,7 @@ export const useProgress = create<ProgressState>()(
       attempts: 0,
       muted: false,
       lastRound: null,
+      gameBests: {},
       record: (track, points) =>
         set((state) => ({
           scores: { ...state.scores, [track]: Math.max(state.scores[track] ?? 0, points) },
@@ -33,18 +37,23 @@ export const useProgress = create<ProgressState>()(
           lastRound: track
         })),
       addXp: (points) => set((state) => ({ xp: Math.max(0, state.xp + points) })),
+      recordGame: (game, score) =>
+        set((state) => ({
+          gameBests: { ...state.gameBests, [game]: Math.max(state.gameBests[game] ?? 0, score) }
+        })),
       toggleMute: () => set((state) => ({ muted: !state.muted })),
-      reset: () => set({ scores: { ...emptyScores }, xp: 0, attempts: 0, lastRound: null })
+      reset: () => set({ scores: { ...emptyScores }, xp: 0, attempts: 0, lastRound: null, gameBests: {} })
     }),
     {
       name: 'round-one-progress',
-      version: 2,
+      version: 3,
       // saves written before the morality round lack that key; fill it in
       migrate: (persisted) => {
         const old = (persisted ?? {}) as Partial<ProgressState>
         return {
           ...old,
-          scores: { ...emptyScores, ...(old.scores ?? {}) }
+          scores: { ...emptyScores, ...(old.scores ?? {}) },
+          gameBests: { ...(old.gameBests ?? {}) }
         } as ProgressState
       }
     }

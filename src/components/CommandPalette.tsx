@@ -2,7 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, BarChart3, Layers, Sparkles, Users, Home, RotateCcw, Volume2, Scale } from 'lucide-react'
+import { BookOpen, BarChart3, Layers, Sparkles, Users, Home, RotateCcw, Volume2, Scale, Gamepad2 } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { guides } from '@/data/guides'
 import { useProgress } from '@/store/progress'
@@ -38,6 +38,13 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                   const Icon = icons[t.id as keyof typeof icons]
                   return <Item key={t.id} onSelect={() => go(t.path)} icon={<Icon className="h-4 w-4" />} label={`${t.no} · ${t.name}`} />
                 })}
+              </Command.Group>
+
+              <Command.Group heading="Arcade">
+                <Item onSelect={() => go('/arcade')} icon={<Gamepad2 className="h-4 w-4" />} label="All games" />
+                <Item onSelect={() => go('/arcade/mastermind')} icon={<Gamepad2 className="h-4 w-4" />} label="Mastermind" />
+                <Item onSelect={() => go('/arcade/sequence')} icon={<Gamepad2 className="h-4 w-4" />} label="Sequence" />
+                <Item onSelect={() => go('/arcade/maths')} icon={<Gamepad2 className="h-4 w-4" />} label="Maths sprint" />
               </Command.Group>
 
               <Command.Group heading="Guides">
