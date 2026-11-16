@@ -3,6 +3,8 @@ import { Check, Grid2x2, RotateCcw, Sparkles } from 'lucide-react'
 import { MirrorBeam } from '@/lab/MirrorBeam'
 import { FloodMaze } from '@/lab/FloodMaze'
 import { WaveMatch } from '@/lab/WaveMatch'
+import { Slingshot } from '@/lab/Slingshot'
+import { FoldNet } from '@/lab/FoldNet'
 
 const STORE = 'round-one.lab.v1'
 
@@ -25,6 +27,18 @@ const STAGES: Stage[] = [
     name: 'Flood search',
     objective: 'Tap cells to build walls. Watch the search spread and find the shortest path.',
     render: () => <FloodMaze />
+  },
+  {
+    id: 'slingshot',
+    name: 'Slingshot',
+    objective: 'Drag back from the orb and release — let the wells bend the shot into the target.',
+    render: () => <Slingshot />
+  },
+  {
+    id: 'fold',
+    name: 'Fold the net',
+    objective: 'Scrub the slider to fold a flat net into a box.',
+    render: () => <FoldNet />
   },
   {
     id: 'wave',
