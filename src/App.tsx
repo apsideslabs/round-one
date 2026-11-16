@@ -9,6 +9,7 @@ const Riddles = lazy(() => import('@/pages/Riddles'))
 const Panel = lazy(() => import('@/pages/Panel'))
 const Morality = lazy(() => import('@/pages/Morality'))
 const Arcade = lazy(() => import('@/pages/Arcade'))
+const MenuPage = lazy(() => import('@/pages/Menu'))
 const Mastermind = lazy(() => import('@/games/Mastermind'))
 const SequenceGame = lazy(() => import('@/games/Sequence'))
 const MathsSprint = lazy(() => import('@/games/MathsSprint'))
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="riddles" element={<Riddles />} />
         <Route path="panel" element={<Panel />} />
         <Route path="morality" element={<Morality />} />
+        <Route path="menu" element={<MenuPage />} />
         <Route path="arcade" element={<Arcade />} />
         <Route path="arcade/mastermind" element={<Mastermind />} />
         <Route path="arcade/sequence" element={<SequenceGame />} />

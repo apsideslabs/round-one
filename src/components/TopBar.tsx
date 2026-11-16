@@ -14,13 +14,14 @@ function titleFor(pathname: string): { title: string; sub: string } {
   if (game) return { title: game.name, sub: 'Arcade' }
   const guide = guides.find((g) => pathname === `/guides/${g.slug}`)
   if (guide) return { title: guide.title, sub: 'Guide' }
+  if (pathname === '/menu') return { title: 'Menu', sub: 'Everything' }
   if (pathname === '/arcade') return { title: 'Arcade', sub: `${games.length} games` }
   if (pathname === '/guides') return { title: 'Guides', sub: `${guides.length} guides` }
   if (pathname === '/') return { title: 'Home', sub: 'Overview' }
   return { title: 'Round One', sub: 'Interview trainer' }
 }
 
-export function TopBar({ onOpenPalette, onOpenMenu }: { onOpenPalette: () => void; onOpenMenu: () => void }) {
+export function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
   const { muted, toggleMute } = useProgress()
   const { pathname } = useLocation()
   const { title, sub } = titleFor(pathname)
@@ -59,14 +60,13 @@ export function TopBar({ onOpenPalette, onOpenMenu }: { onOpenPalette: () => voi
           <Button variant="light" size="sm" onClick={onSound} aria-label={muted ? 'Unmute' : 'Mute'} aria-pressed={!muted}>
             {muted ? <VolumeX className="h-4 w-4 opacity-40" /> : <Volume2 className="h-4 w-4" />}
           </Button>
-          <button
-            type="button"
-            onClick={onOpenMenu}
-            aria-label="Open navigation menu"
+          <Link
+            to="/menu"
+            aria-label="All sections"
             className="hidden h-9 w-9 place-items-center rounded-lg border-2 border-ink bg-ink text-paper shadow-[2px_2px_0_var(--color-ink)] md:grid lg:hidden"
           >
             <LayoutGrid className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
       </div>
     </header>
