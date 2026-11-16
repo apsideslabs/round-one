@@ -74,6 +74,22 @@ export default function Menu() {
       </section>
 
       <section className="mt-8">
+        <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Test</h2>
+        <Link
+          to="/mock"
+          className="flex max-w-[560px] items-center gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-3 shadow-[3px_3px_0_var(--color-ink)]"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink bg-ink text-paper">
+            <ArrowRight className="h-4 w-4" />
+          </span>
+          <span className="grid min-w-0 flex-1 gap-0.5">
+            <span className="text-[14px] font-extrabold">Full mock test</span>
+            <span className="mono-label">20 questions · 20 minutes · sectional score</span>
+          </span>
+        </Link>
+      </section>
+
+      <section className="mt-8">
         <div className="mb-2.5 flex items-baseline justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight">Arcade</h2>
           <Link to="/arcade" className="mono-label underline decoration-ink/30 underline-offset-4">

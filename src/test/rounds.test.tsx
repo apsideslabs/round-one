@@ -6,9 +6,9 @@ import { RadarProfile } from '@/components/RadarProfile'
 import { tracks } from '@/data/tracks'
 import type { Scores } from '@/store/progress'
 
-const scores = { logic: 80, memory: 60, riddles: 40, panel: 30, morality: 70 } as Scores
+const scores = { logic: 80, verbal: 50, memory: 60, riddles: 40, panel: 30, morality: 70 } as Scores
 
-describe('five-round geometry', () => {
+describe('round geometry', () => {
   it('draws one dial arc per round, spread around the full circle', () => {
     const { container } = render(<Dial scores={scores} readiness={43} />)
     const arcs = container.querySelectorAll('circle[stroke-dasharray]')
@@ -16,7 +16,7 @@ describe('five-round geometry', () => {
 
     const angles = [...arcs].map((a) => Number((a.getAttribute('transform') ?? '').match(/rotate\(([-\d.]+)/)?.[1]))
     expect(new Set(angles).size).toBe(tracks.length)
-    // five rounds means 72 degrees apart, not the old 90
+    // arcs must be evenly spaced for however many rounds exist
     expect(angles[1] - angles[0]).toBeCloseTo(360 / tracks.length, 5)
   })
 
@@ -33,12 +33,13 @@ describe('five-round geometry', () => {
     expect(labels.every((l) => l && l !== 'undefined')).toBe(true)
   })
 
-  it('keeps the home screen honest about how many rounds there are', () => {
+  it('keeps every round on the map', () => {
     render(
       <MemoryRouter>
         <Dial scores={scores} readiness={43} />
       </MemoryRouter>
     )
-    expect(tracks.length).toBe(5)
+    expect(tracks.length).toBeGreaterThanOrEqual(5)
+    expect(tracks.map((t) => t.no)).toEqual(tracks.map((_, i) => String(i + 1).padStart(2, '0')))
   })
 })

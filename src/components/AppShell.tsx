@@ -29,7 +29,7 @@ export function AppShell() {
         </main>
         <footer className="border-t-2 border-ink px-4 py-4 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="mono-label">Round One · logic → memory → riddles → panel → morality</span>
+            <span className="mono-label">Round One · logic → verbal → memory → riddles → panel → morality</span>
             <span className="mono-label">React · Vite · Tailwind</span>
           </div>
         </footer>

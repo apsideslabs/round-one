@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarChart3, BookOpen, Home, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
+import { BarChart3, BookOpen, Clock, Home, Languages, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 
 const roundIcons: Record<string, typeof Home> = {
   logic: BarChart3,
+  verbal: Languages,
   memory: Layers,
   riddles: Sparkles,
   panel: Users,
@@ -62,6 +63,12 @@ export function Sidebar() {
             )
           })}
         </ul>
+
+        <NavLink to="/mock" className={({ isActive }) => cn(item, 'mt-1 border-2 border-dashed border-ink/40', isActive && active)}>
+          <Clock className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">Full mock test</span>
+          <span className="font-mono text-[9px] font-bold text-ink-3">20m</span>
+        </NavLink>
 
         <p className="mono-label px-2.5 pb-1 pt-4">Arcade</p>
         <ul className="grid gap-0.5">

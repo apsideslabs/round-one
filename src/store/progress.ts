@@ -19,7 +19,7 @@ interface ProgressState {
   reset: () => void
 }
 
-const emptyScores: Scores = { logic: 0, memory: 0, riddles: 0, panel: 0, morality: 0 }
+const emptyScores: Scores = { logic: 0, verbal: 0, memory: 0, riddles: 0, panel: 0, morality: 0 }
 
 export const useProgress = create<ProgressState>()(
   persist(

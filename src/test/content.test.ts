@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { logic } from '@/data/logic'
 import { riddles } from '@/data/riddles'
+import { verbal } from '@/data/verbal'
 import { memory } from '@/data/memory'
 import { interview } from '@/data/interview'
 import { guides } from '@/data/guides'
@@ -9,6 +10,7 @@ import { tracks } from '@/data/tracks'
 const banks = [
   ...logic.map((q) => ({ ...q, bank: 'logic' })),
   ...riddles.map((q) => ({ ...q, bank: 'riddles' })),
+  ...verbal.map((q) => ({ ...q, bank: 'verbal' })),
   ...memory.flatMap((b) => b.questions.map((q) => ({ ...q, bank: `memory:${b.id}` })))
 ]
 
