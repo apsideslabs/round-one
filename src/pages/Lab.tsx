@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { Check, Grid2x2, RotateCcw, Sparkles } from 'lucide-react'
 import { MirrorBeam } from '@/lab/MirrorBeam'
 import { FloodMaze } from '@/lab/FloodMaze'
@@ -119,7 +118,9 @@ export default function Lab() {
               </p>
               <p className="mt-2 text-[13px] font-medium leading-relaxed text-ink-3">
                 Pick an experiment above and it fills this space — no paragraphs, just something to move.
-                Whatever you keep is marked for the main app.
+              </p>
+              <p className="mt-3 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3">
+                lab first · nothing ships until it is kept here
               </p>
             </div>
           </div>
@@ -154,12 +155,9 @@ export default function Lab() {
             </>
           )}
           {kept.length > 0 && (
-            <Link
-              to="/menu"
-              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-ink bg-card px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider"
-            >
-              {kept.length} kept
-            </Link>
+            <span className="inline-flex items-center gap-1.5 rounded-lg border-2 border-ink bg-card px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider">
+              shortlist · {kept.map((id) => STAGES.find((s) => s.id === id)?.name ?? id).join(' · ')}
+            </span>
           )}
         </div>
       </footer>

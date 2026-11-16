@@ -6,6 +6,14 @@ Built as a real application, not a single-file demo: React 19 + TypeScript, Vite
 
 ---
 
+## Lab first
+
+Every new visual idea is built in `/lab` before it touches the product — a
+full-bleed stage with a one-line objective, no scoring and no content
+commitment. Kept stages form the shortlist; promoted ones move out of
+`src/lab/` into a real round or game. The rule and the promotion checklist live
+in [`docs/LAB_FIRST.md`](docs/LAB_FIRST.md).
+
 ## What's inside
 
 | Round | What it trains | Content | Scoring |
