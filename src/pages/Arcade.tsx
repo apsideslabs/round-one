@@ -1,26 +1,32 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Puzzle, Repeat, Calculator } from 'lucide-react'
+import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug } from 'lucide-react'
 import { games } from '@/data/games'
 import { useProgress } from '@/store/progress'
 
-const icons: Record<string, typeof Puzzle> = { mastermind: Puzzle, sequence: Repeat, maths: Calculator }
+const icons: Record<string, typeof Puzzle> = {
+  mastermind: Puzzle,
+  sequence: Repeat,
+  maths: Calculator,
+  estimate: Ruler,
+  triage: ListOrdered,
+  debug: Bug
+}
 
 export default function Arcade() {
   const gameBests = useProgress((s) => s.gameBests)
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-28 pt-7 sm:px-6">
+    <div className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-7 sm:px-8 lg:px-12">
       <span className="chip">Arcade</span>
       <h1 className="mt-3 text-balance font-display text-3xl font-extrabold tracking-tighter sm:text-4xl">
-        Three drills that fit in a coffee break
+        Six drills, each mirroring a real interview task
       </h1>
       <p className="mt-2 max-w-[56ch] text-[15px] font-medium leading-relaxed text-ink-2">
-        Each one trains a faculty the rounds test — deduction, working memory, and speed under pressure. Scores are kept
-        separately from your readiness, because a game is a warm-up, not a verdict.
+        Three train a faculty — deduction, working memory, speed under pressure. Three rehearse an actual interview task: a guesstimate, a prioritisation call, a debugging round. Scores stay separate from your readiness, because a game is a warm-up, not a verdict.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {games.map((game, i) => {
           const Icon = icons[game.id] ?? Puzzle
           const best = gameBests[game.id] ?? 0

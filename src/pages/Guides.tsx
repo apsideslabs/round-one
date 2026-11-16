@@ -4,7 +4,7 @@ import { guides } from '@/data/guides'
 
 export default function Guides() {
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-28 pt-7 sm:px-6">
+    <div className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-7 sm:px-8 lg:px-12">
       <span className="chip">Learn</span>
       <h1 className="mt-3 text-balance font-display text-3xl font-extrabold tracking-tighter sm:text-4xl">
         The method behind each round
@@ -13,7 +13,7 @@ export default function Guides() {
         Short, specific guides. Each one gives you the rule, the traps that catch people, and a worked example you can copy the shape of.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {guides.map((g) => (
           <Link
             key={g.slug}

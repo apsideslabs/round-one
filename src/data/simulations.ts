@@ -1,0 +1,220 @@
+/**
+ * Content for the three interview-realistic games.
+ *
+ * Every estimate is a *model answer*, not a fact: the chain of assumptions is
+ * shown after each guess, because in a real guesstimate the structure is what
+ * is being marked.
+ */
+export interface Estimate {
+  id: string
+  question: string
+  unit: string
+  answer: number
+  model: string[]
+}
+
+export const estimates: Estimate[] = [
+  {
+    id: 'phones',
+    question: 'How many smartphones are sold in India in a year?',
+    unit: 'million phones',
+    answer: 150,
+    model: [
+      '1.4 billion people; roughly half are adults who buy their own phone → 700 million.',
+      'Replacement cycle of about four years → 175 million replacements a year.',
+      'Discount the tail who stay on feature phones or buy second-hand → ~150 million.'
+    ]
+  },
+  {
+    id: 'metro',
+    question: 'How many journeys does a large city metro make in a day?',
+    unit: 'million journeys',
+    answer: 6.5,
+    model: [
+      'A 250 km network at ~40,000 passengers per km per day → 10 million.',
+      'But ridership is concentrated: assume 65% of that on a weekday → 6.5 million.',
+      'Sanity check: 2.5 million daily riders making 2.6 trips each lands in the same place.'
+    ]
+  },
+  {
+    id: 'coffee',
+    question: 'How many coffees does one busy city café sell on a weekday?',
+    unit: 'cups',
+    answer: 600,
+    model: [
+      'Open 12 hours, with a two-hour morning peak and a smaller evening one.',
+      'Peak: 2 tills × 3 customers a minute × 120 minutes ≈ 480.',
+      'Off-peak: about 1 a minute for the remaining 10 hours ≈ 120. Total ~600.'
+    ]
+  },
+  {
+    id: 'milk',
+    question: 'How many litres of milk does a town of 20,000 people drink in a day?',
+    unit: 'litres',
+    answer: 4000,
+    model: [
+      'Assume 200 ml per person per day across tea, coffee and cereal → 4 litres per 20 people.',
+      '20,000 people ÷ 20 × 4 = 4,000 litres.',
+      'Cross-check: a household of five would take 1 litre a day, which matches how milk is actually sold.'
+    ]
+  },
+  {
+    id: 'twowheeler',
+    question: 'How many two-wheelers are sold in India in a year?',
+    unit: 'million units',
+    answer: 17,
+    model: [
+      'About 250 million households; roughly one in three owns a two-wheeler.',
+      'Replacement every eight years → ~10 million a year from the existing base.',
+      'First-time buyers add roughly 7 million. Total ~17 million.'
+    ]
+  },
+  {
+    id: 'youtube',
+    question: 'How many hours of video are uploaded to YouTube every minute?',
+    unit: 'hours per minute',
+    answer: 500,
+    model: [
+      'Two billion monthly users; assume 0.5% upload anything in a month → 10 million uploaders.',
+      'Average upload 10 minutes, so 100 million minutes a month.',
+      'A month is 43,200 minutes, so 100m ÷ 43,200 ≈ 2,300 minutes per minute — about 38 hours. The real figure is higher because a small tail uploads enormous volumes; 500 hours is the order of magnitude worth defending.'
+    ]
+  }
+]
+
+export interface TriageItem {
+  id: string
+  label: string
+  impact: number
+  urgency: number
+  why: string
+}
+
+export interface TriageScenario {
+  id: string
+  title: string
+  brief: string
+  items: TriageItem[]
+}
+
+export const triageScenarios: TriageScenario[] = [
+  {
+    id: 'oncall',
+    title: 'The Friday on-call',
+    brief:
+      'You are the only engineer on call until Monday. Five things are open. Order them by what you would actually do first.',
+    items: [
+      { id: 'checkout', label: 'Checkout fails for 4% of users on Android', impact: 5, urgency: 5, why: 'Revenue is falling right now, on a growing share of traffic. Nothing else competes with a live payment failure.' },
+      { id: 'pii', label: 'A log line is writing partial card numbers', impact: 5, urgency: 4, why: 'A compliance incident with a clock on it — but the immediate leak can be turned off in minutes, then the fix follows.' },
+      { id: 'flaky', label: 'A test suite is flaky and blocks two PRs', impact: 2, urgency: 3, why: 'It slows the team, not the customer, and it can wait until Monday when others are around.' },
+      { id: 'docs', label: 'API docs are out of date', impact: 1, urgency: 1, why: 'Real, but it costs nobody money this weekend.' },
+      { id: 'upgrade', label: 'A dependency upgrade is due next month', impact: 2, urgency: 1, why: 'Planned work with a distant date; it is not on-call work at all.' }
+    ]
+  },
+  {
+    id: 'launch',
+    title: 'Two weeks to launch',
+    brief:
+      'A product launches in fourteen days. You have one squad. Order the work you would protect first.',
+    items: [
+      { id: 'payments', label: 'Payments retry logic is missing', impact: 5, urgency: 5, why: 'Without it, every network blip becomes a lost sale on day one.' },
+      { id: 'onboarding', label: 'Onboarding has no empty-state copy', impact: 3, urgency: 4, why: 'First-run confusion kills activation, and it is cheap to fix — but it is not a blocker for a soft launch.' },
+      { id: 'analytics', label: 'Analytics events are only half wired', impact: 4, urgency: 3, why: 'You cannot learn from a launch you cannot measure, but a week of partial data is survivable.' },
+      { id: 'theme', label: 'Dark mode is unfinished', impact: 1, urgency: 1, why: 'Nobody churns over a theme; it is polish, not product.' },
+      { id: 'press', label: 'Press kit needs a logo refresh', impact: 2, urgency: 2, why: 'Marketing can ship with the old logo; it does not block the product.' }
+    ]
+  },
+  {
+    id: 'interview',
+    title: 'The interview you are running',
+    brief:
+      'You have 45 minutes and a candidate who is strong but slow. Order what you protect in the session.',
+    items: [
+      { id: 'problem', label: 'One well-scoped problem, fully worked', impact: 5, urgency: 5, why: 'A candidate cannot be assessed on four half-answers; depth is the signal.' },
+      { id: 'questions', label: 'Ten minutes for their questions', impact: 3, urgency: 4, why: 'It is the strongest predictor of whether they accept, and it is the first thing people cut.' },
+      { id: 'intro', label: 'A three-minute intro and context', impact: 4, urgency: 3, why: 'Without it the problem is unfair; with it, everything downstream is faster.' },
+      { id: 'notes', label: 'Writing up the scorecard', impact: 4, urgency: 4, why: 'Skipping it corrupts the hiring decision, but it happens after the session, not inside it.' },
+      { id: 'tour', label: 'An office tour', impact: 1, urgency: 1, why: 'Pleasant, but it does not change whether the candidate accepts.' }
+    ]
+  }
+]
+
+export interface BugQuestion {
+  id: string
+  language: string
+  prompt: string
+  code: string
+  options: string[]
+  answer: number
+  why: string
+}
+
+export const bugQuestions: BugQuestion[] = [
+  {
+    id: 'b1',
+    language: 'JavaScript',
+    prompt: 'This counter is supposed to increment once per click. What is wrong?',
+    code: `for (var i = 0; i < 3; i++) {
+  button.addEventListener('click', () => {
+    console.log('click', i)
+  })
+}`,
+    options: [
+      'The arrow function creates a new scope each time',
+      '`var` is function-scoped, so all three handlers close over the same `i`',
+      '`addEventListener` cannot be called in a loop',
+      '`console.log` is asynchronous here'
+    ],
+    answer: 1,
+    why: '`var` is hoisted to the function scope, so every closure sees the final value of `i` — 3. Switching to `let` gives each iteration its own binding.'
+  },
+  {
+    id: 'b2',
+    language: 'JavaScript',
+    prompt: 'This fetch helper returns undefined at the call site. Why?',
+    code: `function getUser(id) {
+  fetch('/api/users/' + id)
+    .then(r => r.json())
+    .then(data => data.user)
+}`,
+    options: [
+      'The API returns the wrong shape',
+      '`fetch` needs an await keyword inside `.then`',
+      'Nothing is returned — the promise chain is never returned from the function',
+      '`r.json()` must be awaited twice'
+    ],
+    answer: 2,
+    why: 'The function starts the chain and returns nothing. `return fetch(...)` hands the promise back so the caller can await it.'
+  },
+  {
+    id: 'b3',
+    language: 'Python',
+    prompt: 'This is meant to build a list of three empty lists. What happens instead?',
+    code: `grid = [[]] * 3
+grid[0].append(1)`,
+    options: [
+      'It raises an IndexError',
+      'Only the first list gets the value, as intended',
+      'All three inner lists are the same object, so all three gain the 1',
+      'The list is immutable and append fails'
+    ],
+    answer: 2,
+    why: '`[[]] * 3` repeats the *same* list object three times. Use `[[] for _ in range(3)]` to create three distinct lists.'
+  },
+  {
+    id: 'b4',
+    language: 'SQL',
+    prompt: 'This query is meant to count customers with at least one order. Why is the number wrong?',
+    code: `SELECT COUNT(*) FROM customers
+LEFT JOIN orders ON orders.customer_id = customers.id
+WHERE orders.status = 'paid'`,
+    options: [
+      'COUNT(*) should be COUNT(1)',
+      'The LEFT JOIN is defeated by the WHERE clause, so customers with no paid order vanish',
+      'The join condition is reversed',
+      'COUNT(*) counts orders, not customers'
+    ],
+    answer: 1,
+    why: 'A WHERE on the right-hand table turns the outer join into an inner join. Put the condition in the ON clause, or count DISTINCT customers.'
+  }
+]
