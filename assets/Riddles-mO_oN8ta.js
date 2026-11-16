@@ -1,0 +1,1 @@
+import{j as r}from"./ui-BD7YCvIW.js";import{Q as t}from"./QuizRound-BkXz1tgH.js";import{r as i}from"./index-7NUXwP-m.js";import"./react-SojlxpzI.js";import"./Explanation-DnAGRtuJ.js";import"./motion-DtSDdxAE.js";import"./ResultShell-B9JdH8OO.js";function a(){return r.jsx(t,{trackId:"riddles",items:i,perQuestion:45})}export{a as default};
