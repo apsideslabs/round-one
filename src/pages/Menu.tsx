@@ -6,6 +6,7 @@ import { games } from '@/data/games'
 import { guides } from '@/data/guides'
 import { useProgress } from '@/store/progress'
 import { setMuted } from '@/lib/fx'
+import { VoicePanel } from '@/components/VoicePanel'
 
 export default function Menu() {
   const { muted, toggleMute, reset, scores, gameBests, lastRound } = useProgress()
@@ -185,6 +186,7 @@ export default function Menu() {
       <section className={`mt-8 max-w-[560px] ${q ? 'hidden' : ''}`}>
         <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Settings</h2>
         <div className="grid gap-2">
+          <VoicePanel />
           <button
             type="button"
             onClick={onSound}
