@@ -18,6 +18,7 @@ const MathsSprint = lazy(() => import('@/games/MathsSprint'))
 const Estimate = lazy(() => import('@/games/Estimate'))
 const Triage = lazy(() => import('@/games/Triage'))
 const Debug = lazy(() => import('@/games/Debug'))
+const OddTile = lazy(() => import('@/games/OddTile'))
 const Guides = lazy(() => import('@/pages/Guides'))
 const GuideDetail = lazy(() => import('@/pages/GuideDetail'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="arcade/estimate" element={<Estimate />} />
         <Route path="arcade/triage" element={<Triage />} />
         <Route path="arcade/debug" element={<Debug />} />
+        <Route path="arcade/oddtile" element={<OddTile />} />
         <Route path="guides" element={<Guides />} />
         <Route path="guides/:slug" element={<GuideDetail />} />
         <Route path="*" element={<NotFound />} />

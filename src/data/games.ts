@@ -34,6 +34,17 @@ export const games: GameMeta[] = [
     how: 'Four pads light up in order. Copy the order. Each success adds one more step — this is the span number interviewers are quietly testing when they ask you to walk them through a project.'
   },
   {
+    id: 'oddtile',
+    name: 'Odd tile',
+    tagline: 'One tile in the grid is subtly different.',
+    skill: 'Attention to detail · visual search',
+    path: '/arcade/oddtile',
+    colour: '#0f766e',
+    soft: '#d6f2ee',
+    ink: '#ffffff',
+    how: 'A grid of identical tiles, one of which is rotated slightly, a touch smaller, or differently rounded. Tap it. The grid grows and the difference shrinks as you climb, and you get a median find time at the end — the number attention-to-detail assessments actually score.'
+  },
+  {
     id: 'estimate',
     name: 'Estimate',
     tagline: 'A guesstimate with the reasoning shown.',

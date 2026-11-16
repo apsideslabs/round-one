@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug } from 'lucide-react'
+import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug, Eye } from 'lucide-react'
 import { games } from '@/data/games'
 import { useProgress } from '@/store/progress'
 
@@ -10,7 +10,8 @@ const icons: Record<string, typeof Puzzle> = {
   maths: Calculator,
   estimate: Ruler,
   triage: ListOrdered,
-  debug: Bug
+  debug: Bug,
+  oddtile: Eye
 }
 
 export default function Arcade() {

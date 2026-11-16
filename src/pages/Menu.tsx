@@ -1,5 +1,6 @@
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpen, RotateCcw, Volume2, VolumeX, ChevronRight } from 'lucide-react'
+import { ArrowRight, BookOpen, RotateCcw, Search, Volume2, VolumeX, ChevronRight } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -8,6 +9,14 @@ import { setMuted } from '@/lib/fx'
 
 export default function Menu() {
   const { muted, toggleMute, reset, scores, gameBests, lastRound } = useProgress()
+  const [query, setQuery] = useState('')
+
+  const q = query.trim().toLowerCase()
+  const match = (text: string) => !q || text.toLowerCase().includes(q)
+  const shownTracks = useMemo(() => tracks.filter((t) => match(t.name) || match(t.blurb)), [q])
+  const shownGames = useMemo(() => games.filter((g) => match(g.name) || match(g.skill)), [q])
+  const shownGuides = useMemo(() => guides.filter((g) => match(g.title) || match(g.kicker)), [q])
+  const nothing = q && !shownTracks.length && !shownGames.length && !shownGuides.length
   const resume = lastRound ? tracks.find((t) => t.id === lastRound) : null
 
   const onSound = () => {
@@ -27,7 +36,31 @@ export default function Menu() {
         </p>
       </header>
 
-      {resume && (
+      <label className="mt-5 block max-w-[560px]">
+        <span className="mono-label">Search everything</span>
+        <span className="mt-1 flex items-center gap-2 rounded-xl border-2 border-ink bg-card px-3 py-2 shadow-[3px_3px_0_var(--color-ink)]">
+          <Search className="h-4 w-4 shrink-0 text-ink-3" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="round, game or guide — try “verbal”, “estimate”, “star”"
+            className="w-full bg-transparent font-sans text-[14px] font-semibold outline-none placeholder:font-normal placeholder:text-ink-3"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} className="font-mono text-[9px] font-bold uppercase tracking-wider text-ink-3">
+              clear
+            </button>
+          )}
+        </span>
+      </label>
+
+      {nothing && (
+        <p className="mt-6 rounded-xl border-2 border-dashed border-ink/40 px-4 py-6 text-center text-[13.5px] font-semibold text-ink-3">
+          Nothing matches “{query}”. Try “logic”, “sequence” or “salary”.
+        </p>
+      )}
+
+      {!q && resume && (
         <Link
           to={resume.path}
           className="mt-6 flex max-w-[560px] items-center justify-between gap-3 rounded-xl border-2 border-ink px-4 py-3 shadow-[3px_3px_0_var(--color-ink)]"
@@ -41,13 +74,13 @@ export default function Menu() {
         </Link>
       )}
 
-      <section className="mt-8">
+      <section className={`mt-8 ${shownTracks.length ? '' : 'hidden'}`}>
         <div className="mb-2.5 flex items-baseline justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight">Rounds</h2>
           <span className="mono-label">best / maximum</span>
         </div>
         <ul className="grid gap-2 sm:grid-cols-2">
-          {tracks.map((t) => (
+          {shownTracks.map((t) => (
             <li key={t.id}>
               <Link
                 to={t.path}
@@ -73,7 +106,7 @@ export default function Menu() {
         </ul>
       </section>
 
-      <section className="mt-8">
+      <section className={`mt-8 ${q ? 'hidden' : ''}`}>
         <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Test</h2>
         <Link
           to="/mock"
@@ -89,7 +122,7 @@ export default function Menu() {
         </Link>
       </section>
 
-      <section className="mt-8">
+      <section className={`mt-8 ${shownGames.length ? '' : 'hidden'}`}>
         <div className="mb-2.5 flex items-baseline justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight">Arcade</h2>
           <Link to="/arcade" className="mono-label underline decoration-ink/30 underline-offset-4">
@@ -97,7 +130,7 @@ export default function Menu() {
           </Link>
         </div>
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {games.map((g) => (
+          {shownGames.map((g) => (
             <li key={g.id}>
               <Link
                 to={g.path}
@@ -114,7 +147,7 @@ export default function Menu() {
         </ul>
       </section>
 
-      <section className="mt-8">
+      <section className={`mt-8 ${shownGuides.length ? '' : 'hidden'}`}>
         <div className="mb-2.5 flex items-baseline justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight">Guides</h2>
           <Link to="/guides" className="mono-label underline decoration-ink/30 underline-offset-4">
@@ -122,7 +155,7 @@ export default function Menu() {
           </Link>
         </div>
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {guides.map((g) => (
+          {shownGuides.map((g) => (
             <li key={g.slug}>
               <Link
                 to={`/guides/${g.slug}`}
@@ -137,7 +170,7 @@ export default function Menu() {
         </ul>
       </section>
 
-      <section className="mt-8 max-w-[560px]">
+      <section className={`mt-8 max-w-[560px] ${q ? 'hidden' : ''}`}>
         <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Settings</h2>
         <div className="grid gap-2">
           <button
