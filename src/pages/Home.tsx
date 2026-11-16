@@ -52,7 +52,10 @@ export default function Home() {
             </span>
             <h1 className="mt-4 text-balance font-display text-4xl font-extrabold leading-[0.94] tracking-tighter sm:text-6xl lg:text-7xl">
               Train the rounds that{' '}
-              <em className="not-italic text-c3 underline decoration-c1 decoration-[0.1em] underline-offset-4">cut people.</em>
+              <em className="relative not-italic text-c3">
+                cut people.
+                <span className="hero-underline" aria-hidden="true" />
+              </em>
             </h1>
             <p className="mt-4 max-w-[46ch] text-[15px] font-medium leading-relaxed text-white/70 sm:text-base">
               Aptitude, verbal, memory, riddles, a scored panel and moral reasoning — practise what the interview actually

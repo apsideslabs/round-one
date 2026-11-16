@@ -1,12 +1,22 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
+
+const BUILD_ID = String(Date.now())
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   base: './',
+  define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   plugins: [
     react(),
+    {
+      // a tiny file the app can fetch past any cache to see if it is stale
+      name: 'version-file',
+      generateBundle() {
+        this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ id: BUILD_ID }) })
+      }
+    }
   ],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: {

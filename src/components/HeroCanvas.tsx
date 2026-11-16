@@ -34,11 +34,11 @@ export function HeroCanvas({ className = '' }: { className?: string }) {
       canvas.height = Math.floor(h * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const count = Math.max(28, Math.min(90, Math.round((w * h) / 14000)))
+      const count = Math.max(40, Math.min(150, Math.round((w * h) / 9000)))
       dots = Array.from({ length: count }, (_, i) => ({
         x: (i / count) * w + ((i * 37) % 24),
         y: (i * 53) % h,
-        r: 1.1 + ((i * 7) % 10) / 7,
+        r: 1.6 + ((i * 7) % 12) / 6,
         phase: (i * 0.7) % (Math.PI * 2),
         speed: 0.5 + ((i * 13) % 9) / 10,
         amp: 10 + ((i * 5) % 22),
@@ -69,7 +69,7 @@ export function HeroCanvas({ className = '' }: { className?: string }) {
           }
         }
 
-        ctx.globalAlpha = 0.3 + Math.abs(Math.sin(t * d.speed * 0.7 + d.phase)) * 0.6
+        ctx.globalAlpha = 0.45 + Math.abs(Math.sin(t * d.speed * 0.7 + d.phase)) * 0.55
         ctx.fillStyle = d.colour
         ctx.beginPath()
         ctx.arc(x, y, d.r, 0, Math.PI * 2)

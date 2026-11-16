@@ -154,7 +154,25 @@
   0%, 100% { transform: rotate(-5deg); }
   50% { transform: rotate(5deg); }
 }
+@keyframes heroUnderline {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
 @layer components {
+  .hero-underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.06em;
+    height: 0.1em;
+    background: var(--color-c1);
+    transform-origin: left;
+    animation: heroUnderline 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, heroGlow 3.6s ease-in-out 1s infinite;
+  }
   .glyph-bar { transform-origin: 50% 100%; animation: glyphBar 2.4s ease-in-out infinite; }
   .glyph-flip { animation: glyphFlip 3.2s ease-in-out infinite; }
   .glyph-stack { animation: glyphStack 2.8s ease-in-out infinite; }
@@ -164,7 +182,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glyph-bar, .glyph-flip, .glyph-stack, .glyph-pulse, .glyph-bob, .glyph-tilt { animation: none !important; }
+  .glyph-bar, .glyph-flip, .glyph-stack, .glyph-pulse, .glyph-bob, .glyph-tilt, .hero-underline { animation: none !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   *,

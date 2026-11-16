@@ -182,6 +182,10 @@ export default function Menu() {
             <span className="flex-1 text-[13.5px] font-bold">Sound</span>
             <span className="chip bg-[#f4f2ea] border-line">{muted ? 'muted' : 'on'}</span>
           </button>
+          <div className="flex items-center justify-between gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-2.5 shadow-[2px_2px_0_var(--color-ink)]">
+            <span className="text-[13px] font-bold">Build</span>
+            <span className="font-mono text-[10px] font-bold text-ink-3">{__BUILD_ID__}</span>
+          </div>
           <button
             type="button"
             onClick={reset}

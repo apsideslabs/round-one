@@ -15,7 +15,7 @@ export function TrackRow({ track, best }: { track: Track; best: number }) {
           <span className="font-display text-3xl font-extrabold leading-none tracking-tighter opacity-35 sm:text-4xl lg:text-5xl">
             {track.no}
           </span>
-          <span className="hidden sm:block" style={{ color: track.ink === '#ffffff' ? '#ffffff' : '#12151a' }}>
+          <span style={{ color: track.ink === '#ffffff' ? '#ffffff' : '#12151a' }}>
             <RoundGlyph id={track.id} colour={track.ink === '#ffffff' ? '#ffffff' : '#12151a'} size={40} />
           </span>
         </span>
