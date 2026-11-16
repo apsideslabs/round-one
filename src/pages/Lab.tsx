@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Check, Grid2x2, RotateCcw, Sparkles } from 'lucide-react'
 import { Optics } from '@/lab/Optics'
+import { SetLogic } from '@/lab/SetLogic'
 import { FloodMaze } from '@/lab/FloodMaze'
 import { WaveMatch } from '@/lab/WaveMatch'
 import { Projectile } from '@/lab/Projectile'
@@ -33,6 +34,12 @@ const STAGES: Stage[] = [
     name: 'Projectile',
     objective: 'Set speed, angle and drag. The dashed arc is the same RK4 model that flies the shot.',
     render: () => <Projectile />
+  },
+  {
+    id: 'sets',
+    name: 'Set logic',
+    objective: 'Drag the rings. If the premises hold while the conclusion fails, you have found a counterexample.',
+    render: () => <SetLogic />
   },
   {
     id: 'fold',
