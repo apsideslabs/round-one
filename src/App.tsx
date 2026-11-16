@@ -11,6 +11,7 @@ const Panel = lazy(() => import('@/pages/Panel'))
 const Morality = lazy(() => import('@/pages/Morality'))
 const Arcade = lazy(() => import('@/pages/Arcade'))
 const Mock = lazy(() => import('@/pages/Mock'))
+const Room = lazy(() => import('@/pages/Room'))
 const MenuPage = lazy(() => import('@/pages/Menu'))
 const Mastermind = lazy(() => import('@/games/Mastermind'))
 const SequenceGame = lazy(() => import('@/games/Sequence'))
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="morality" element={<Morality />} />
         <Route path="menu" element={<MenuPage />} />
         <Route path="mock" element={<Mock />} />
+        <Route path="room" element={<Room />} />
         <Route path="arcade" element={<Arcade />} />
         <Route path="arcade/mastermind" element={<Mastermind />} />
         <Route path="arcade/sequence" element={<SequenceGame />} />

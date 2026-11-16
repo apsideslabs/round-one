@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarChart3, BookOpen, Clock, Home, Languages, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
+import { BarChart3, BookOpen, Clock, Home, Languages, Layers, Mic as MicIcon, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -64,6 +64,12 @@ export function Sidebar() {
             )
           })}
         </ul>
+
+        <NavLink to="/room" className={({ isActive }) => cn(item, 'mt-1 bg-ink text-paper hover:bg-ink hover:text-paper [&_svg]:text-c1', isActive && 'bg-ink text-paper')}>
+          <MicIcon className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">The room · voice</span>
+          <span className="font-mono text-[9px] font-bold text-white/50">live</span>
+        </NavLink>
 
         <NavLink to="/mock" className={({ isActive }) => cn(item, 'mt-1 border-2 border-dashed border-ink/40', isActive && active)}>
           <Clock className="h-4 w-4 shrink-0" />
