@@ -3,9 +3,11 @@ import { Outlet } from 'react-router-dom'
 import { TopBar } from '@/components/TopBar'
 import { BottomNav } from '@/components/BottomNav'
 import { CommandPalette } from '@/components/CommandPalette'
+import { NavSheet } from '@/components/NavSheet'
 
 export function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -30,7 +32,8 @@ export function AppShell() {
           <span className="mono-label">Built with React, Vite and Tailwind</span>
         </div>
       </footer>
-      <BottomNav />
+      <BottomNav onOpenMenu={() => setMenuOpen(true)} />
+      <NavSheet open={menuOpen} onOpenChange={setMenuOpen} />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   )
