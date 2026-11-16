@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, BookOpen, Clock, Flame, Play } from 'lucide-react'
+import { ArrowRight, Flame, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dial } from '@/components/Dial'
 import { TrackRow } from '@/components/TrackRow'
@@ -14,7 +14,6 @@ import { pct } from '@/lib/utils'
 
 const shell = 'w-full px-4 sm:px-6 lg:px-8'
 
-/** The guide that matches each round, used for the next-step suggestion. */
 const guideFor: Record<TrackId, string> = {
   logic: 'classification',
   verbal: 'star-answers',
@@ -30,115 +29,113 @@ export default function Home() {
   const streak = currentStreak(days)
   const week = lastSeven(days)
 
-  // What to do next: resume the last round, else the round with the lowest share.
-  const weakest = [...tracks].sort(
-    (a, b) => pct(scores[a.id] ?? 0, a.max) - pct(scores[b.id] ?? 0, b.max)
-  )[0]
+  const weakest = [...tracks].sort((a, b) => pct(scores[a.id] ?? 0, a.max) - pct(scores[b.id] ?? 0, b.max))[0]
   const resume = lastRound ? trackById(lastRound) : weakest
   const resumeScore = scores[resume.id] ?? 0
   const resumePct = pct(resumeScore, resume.max)
 
-  const plan = [
-    {
-      kind: 'Round',
-      title: resume.name,
-      reason: lastRound ? 'where you left off' : 'your lowest score so far',
-      to: resume.path,
-      meta: `${resumeScore}/${resume.max}`
-    },
-    {
-      kind: 'Game',
-      title: (games.find((g) => !gameBests[g.id]) ?? games[0]).name,
-      reason: games.some((g) => !gameBests[g.id]) ? 'not played yet' : 'keep the streak alive',
-      to: (games.find((g) => !gameBests[g.id]) ?? games[0]).path,
-      meta: '3 min'
-    },
-    {
-      kind: 'Guide',
-      title: guides.find((g) => g.slug === guideFor[resume.id])?.title ?? guides[0].title,
-      reason: `the method behind ${resume.short.toLowerCase()}`,
-      to: `/guides/${guides.find((g) => g.slug === guideFor[resume.id])?.slug ?? guides[0].slug}`,
-      meta: `${guides.find((g) => g.slug === guideFor[resume.id])?.minutes ?? 6} min`
-    }
-  ]
+  const nextGame = games.find((g) => !gameBests[g.id]) ?? games[0]
+  const nextGuide = guides.find((g) => g.slug === guideFor[resume.id]) ?? guides[0]
 
   return (
     <div className="w-full">
-      {/* lead: the single next action, not a brochure */}
+      {/* ---------- the hero, restored ---------- */}
       <section className="w-full bg-ink text-white">
-        <div className={`${shell} grid items-center gap-8 py-8 lg:grid-cols-[1.1fr_0.9fr] lg:py-12`}>
+        <div className={`${shell} grid items-center gap-8 py-9 lg:grid-cols-[1.1fr_0.9fr] lg:py-14`}>
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="chip border-white/35 bg-white/10 text-white">
-                <Flame className="h-3 w-3" /> {streak} day{streak === 1 ? '' : 's'}
-              </span>
-              <span className="chip border-white/35 bg-white/10 text-white">
-                {QUESTION_COUNT} questions · {tracks.length} rounds · {games.length} games
-              </span>
-            </div>
-
-            <p className="mono-label mt-5 text-white/50">{lastRound ? 'Continue' : 'Start here'}</p>
-            <h1 className="mt-1 font-display text-3xl font-extrabold leading-[1.05] tracking-tighter sm:text-5xl">
-              {resume.name}
+            <span className="chip border-white/35 bg-white/10 text-white">
+              <span className="h-2 w-2 rounded-full bg-c1" />
+              {QUESTION_COUNT} questions · {tracks.length} rounds · {games.length} games
+            </span>
+            <h1 className="mt-4 text-balance font-display text-4xl font-extrabold leading-[0.94] tracking-tighter sm:text-6xl lg:text-7xl">
+              Train the rounds that{' '}
+              <em className="not-italic text-c3 underline decoration-c1 decoration-[0.1em] underline-offset-4">cut people.</em>
             </h1>
-            <p className="mt-2 max-w-[46ch] text-[14px] font-medium leading-relaxed text-white/70">
-              {lastRound
-                ? `You were here last. Best so far: ${resumeScore} of ${resume.max} (${resumePct}%).`
-                : `Nothing attempted yet. Best so far is a blank page — ${resume.meta.join(', ').toLowerCase()}.`}
+            <p className="mt-4 max-w-[46ch] text-[15px] font-medium leading-relaxed text-white/70 sm:text-base">
+              Aptitude, verbal, memory, riddles, a scored panel and moral reasoning — practise what the interview actually
+              tests.
             </p>
-
-            <div className="mt-3 h-2 w-full max-w-[340px] overflow-hidden rounded-full border-2 border-white/30">
-              <div className="h-full transition-[width] duration-700" style={{ width: `${resumePct}%`, background: resume.colour }} />
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2.5">
+            <div className="mt-6 flex flex-wrap gap-2.5">
               <Button variant="accent" asChild>
-                <Link to={resume.path}>
-                  {lastRound ? 'Continue' : 'Start'} round <ArrowRight className="h-4 w-4" />
+                <Link to="/logic">
+                  Start round 01 <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button variant="light" asChild>
-                <Link to="/arcade">Arcade</Link>
+                <Link to="/panel">Jump to the panel</Link>
               </Button>
               <Button variant="light" asChild>
-                <Link to="/menu">Everything</Link>
+                <Link to="/arcade">Arcade</Link>
               </Button>
             </div>
           </div>
 
           <div className="rounded-2xl border-2 border-ink bg-card p-4 text-ink shadow-[6px_6px_0_rgba(255,75,38,0.9)]">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="mono-label">This week</span>
-              <span className="font-mono text-[10px] font-bold">{streak} day streak</span>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="mono-label">Readiness</span>
+              <span className="chip bg-[#f4f2ea] border-line">
+                <Flame className="h-3 w-3" /> {streak} day{streak === 1 ? '' : 's'}
+              </span>
             </div>
-            <div className="mb-4 grid grid-cols-7 gap-1.5">
+            <Dial scores={scores} readiness={ready} compact />
+            <div className="mt-3 grid grid-cols-7 gap-1">
               {week.map((d) => (
-                <div key={d.key} className="grid justify-items-center gap-1">
-                  <span
-                    className={`grid h-7 w-7 place-items-center rounded-md border-2 border-ink text-[9px] font-bold ${
-                      d.done ? 'bg-c2 text-white' : d.isToday ? 'bg-c3' : 'bg-card text-ink-3'
-                    }`}
-                  >
-                    {d.done ? '✓' : ''}
-                  </span>
-                  <span className="font-mono text-[8px] font-bold uppercase text-ink-3">{d.label}</span>
-                </div>
+                <span
+                  key={d.key}
+                  className={`grid h-6 place-items-center rounded border-2 border-ink text-[8px] font-bold ${
+                    d.done ? 'bg-c2 text-white' : d.isToday ? 'bg-c3' : 'bg-card text-ink-3'
+                  }`}
+                >
+                  {d.done ? '✓' : d.label}
+                </span>
               ))}
             </div>
-            <Dial scores={scores} readiness={ready} />
-            <p className="mono-label mt-3 text-center">Progress is kept even if a day is missed</p>
+            <p className="mono-label mt-2 text-center">progress is kept if a day is missed</p>
           </div>
         </div>
       </section>
 
-      {/* today's plan */}
+      {/* ---------- continue ---------- */}
+      <section className="w-full border-b-2 border-ink bg-card">
+        <div className={`${shell} flex flex-wrap items-center justify-between gap-4 py-4`}>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <span
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border-2 border-ink font-mono text-[11px] font-bold"
+              style={{ background: resume.colour, color: resume.ink }}
+            >
+              {resume.no}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="mono-label">{lastRound ? 'Continue' : 'Start here'}</p>
+              <p className="truncate font-display text-lg font-extrabold leading-tight tracking-tight">{resume.name}</p>
+              <div className="mt-1 flex max-w-[280px] items-center gap-2">
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full border border-ink bg-[#f2f0e8]">
+                  <span className="block h-full" style={{ width: `${resumePct}%`, background: resume.colour }} />
+                </span>
+                <span className="font-mono text-[9px] font-bold text-ink-3">{resumeScore}/{resume.max}</span>
+              </div>
+            </div>
+          </div>
+          <Button size="sm" asChild>
+            <Link to={resume.path}>
+              {lastRound ? 'Resume' : 'Begin'} <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* ---------- today's plan ---------- */}
       <div className={`${shell} pt-7`}>
         <div className="mb-2.5 flex items-end justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">Today’s plan</h2>
           <span className="mono-label">three things, about 15 minutes</span>
         </div>
         <ul className="grid gap-2.5 sm:grid-cols-3">
-          {plan.map((item, i) => (
+          {[
+            { kind: 'Round', title: resume.name, reason: lastRound ? 'where you left off' : 'your lowest score so far', to: resume.path, meta: `${resumeScore}/${resume.max}` },
+            { kind: 'Game', title: nextGame.name, reason: gameBests[nextGame.id] ? 'keep the streak alive' : 'not played yet', to: nextGame.path, meta: '3 min' },
+            { kind: 'Guide', title: nextGuide.title, reason: `the method behind ${resume.short.toLowerCase()}`, to: `/guides/${nextGuide.slug}`, meta: `${nextGuide.minutes} min` }
+          ].map((item, i) => (
             <li key={`${item.kind}-${item.title}`}>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <Link
@@ -161,74 +158,18 @@ export default function Home() {
         </ul>
       </div>
 
-      {/* rounds */}
+      {/* ---------- rounds ---------- */}
       <div className={`${shell} pb-1 pt-8`}>
         <div className="flex items-end justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">All rounds</h2>
           <span className="mono-label">best score</span>
         </div>
       </div>
-      <section className="w-full border-y-2 border-ink">
+      <section className="w-full border-y-2 border-ink pb-16">
         {tracks.map((t) => (
           <TrackRow key={t.id} track={t} best={scores[t.id]} />
         ))}
       </section>
-
-      {/* arcade + guides */}
-      <div className={`${shell} pb-28 pt-8`}>
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">Arcade</h2>
-          <Link to="/arcade" className="mono-label underline decoration-ink/30 underline-offset-4">
-            All {games.length} games
-          </Link>
-        </div>
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {games.slice(0, 6).map((game) => (
-            <Link
-              key={game.id}
-              to={game.path}
-              className="group flex h-full flex-col gap-1.5 overflow-hidden rounded-2xl border-2 border-ink bg-card shadow-[3px_3px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5"
-            >
-              <span className="flex items-center justify-between gap-2 border-b-2 border-ink px-3 py-2" style={{ background: game.colour, color: game.ink }}>
-                <span className="font-mono text-[8.5px] font-bold uppercase tracking-wider">{game.skill}</span>
-                <span className="font-mono text-[8.5px] font-bold uppercase tracking-wider opacity-90">
-                  {gameBests[game.id] ? `best ${gameBests[game.id]}` : 'new'}
-                </span>
-              </span>
-              <span className="flex flex-1 flex-col gap-1 px-3.5 pb-3.5 pt-3">
-                <span className="font-display text-lg font-extrabold tracking-tight">{game.name}</span>
-                <span className="text-[13px] font-medium leading-relaxed text-ink-2">{game.tagline}</span>
-              </span>
-            </Link>
-          ))}
-        </section>
-
-        <div className="mb-3 mt-10 flex items-end justify-between gap-3">
-          <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">Learn the method</h2>
-          <Link to="/guides" className="mono-label underline decoration-ink/30 underline-offset-4">
-            All {guides.length} guides
-          </Link>
-        </div>
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {guides.slice(0, 3).map((g) => (
-            <Link
-              key={g.slug}
-              to={`/guides/${g.slug}`}
-              className="group flex h-full flex-col gap-2 rounded-2xl border-2 border-ink bg-card p-4 shadow-[3px_3px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5"
-            >
-              <span className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                <span className="mono-label">{g.kicker}</span>
-              </span>
-              <span className="font-display text-lg font-extrabold tracking-tight">{g.title}</span>
-              <span className="text-[13px] font-medium leading-relaxed text-ink-2">{g.summary}</span>
-              <span className="mono-label mt-auto inline-flex items-center gap-1.5 pt-2">
-                <Clock className="h-3 w-3" /> {g.minutes} min
-              </span>
-            </Link>
-          ))}
-        </section>
-      </div>
     </div>
   )
 }
