@@ -4,6 +4,7 @@ import { ArrowRight, Flame, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dial } from '@/components/Dial'
 import { HeroCanvas } from '@/components/HeroCanvas'
+import { ScoreTerrain } from '@/components/ScoreTerrain'
 import { TrackRow } from '@/components/TrackRow'
 import { tracks, trackById, QUESTION_COUNT, type TrackId } from '@/data/tracks'
 import { guides } from '@/data/guides'
@@ -158,6 +159,17 @@ export default function Home() {
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* ---------- 3d profile ---------- */}
+      <div className={`${shell} pt-8`}>
+        <div className="mb-2.5 flex items-end justify-between gap-3">
+          <h2 className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">Your profile, in three dimensions</h2>
+          <span className="mono-label">six towers · one per round</span>
+        </div>
+        <div className="overflow-hidden rounded-2xl border-2 border-ink bg-[#f7f5ee] shadow-[4px_4px_0_var(--color-ink)]">
+          <ScoreTerrain scores={scores} height={400} />
+        </div>
       </div>
 
       {/* ---------- rounds ---------- */}
