@@ -59,6 +59,23 @@ export function Carousel3D({ items, radius = 320, cardWidth = 250, cardHeight = 
 
   return (
     <div className="relative w-full select-none">
+      <button
+        type="button"
+        onClick={() => nudge(1)}
+        aria-label="Previous game"
+        className="absolute left-0 top-[42%] z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg border-2 border-ink bg-card shadow-[3px_3px_0_var(--color-ink)] hover:-translate-y-[calc(50%+1px)]"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => nudge(-1)}
+        aria-label="Next game"
+        className="absolute right-0 top-[42%] z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg border-2 border-ink bg-card shadow-[3px_3px_0_var(--color-ink)] hover:-translate-y-[calc(50%+1px)]"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+
       <div
         className="relative mx-auto origin-center scale-[0.6] touch-pan-y sm:scale-100 [--ring-h:250px] sm:[--ring-h:390px]"
         style={{ height: 'var(--ring-h)', perspective: 1200, perspectiveOrigin: '50% 45%' }}
@@ -123,26 +140,10 @@ export function Carousel3D({ items, radius = 320, cardWidth = 250, cardHeight = 
         </div>
       </div>
 
-      <div className="mt-1 flex items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => nudge(1)}
-          aria-label="Previous"
-          className="grid h-9 w-9 place-items-center rounded-lg border-2 border-ink bg-card shadow-[2px_2px_0_var(--color-ink)]"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+      <div className="mt-2 flex items-center justify-center">
         <span className="chip bg-[#f4f2ea] border-line">
           {items[front]?.title ?? ''} · {front + 1}/{items.length}
         </span>
-        <button
-          type="button"
-          onClick={() => nudge(-1)}
-          aria-label="Next"
-          className="grid h-9 w-9 place-items-center rounded-lg border-2 border-ink bg-card shadow-[2px_2px_0_var(--color-ink)]"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
       </div>
     </div>
   )
