@@ -107,7 +107,7 @@ export function QuizRunner({ track, items, perQuestion, onComplete, onQuit }: Pr
   }
 
   return (
-    <section className="w-full px-4 pb-12 pt-5 sm:px-6 lg:px-8">
+    <section className="w-full px-4 pb-24 md:pb-12 pt-5 sm:px-6 lg:px-8">
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,860px)_minmax(260px,320px)]">
         <div className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-2 shadow-[3px_3px_0_var(--color-ink)]">

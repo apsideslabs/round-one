@@ -64,7 +64,7 @@ export function TopBar({ onOpenPalette }: { onOpenPalette: () => void }) {
           <Link
             to="/menu"
             aria-label="All sections"
-            className="grid h-9 w-9 place-items-center rounded-lg border-2 border-ink bg-ink text-paper shadow-[2px_2px_0_var(--color-ink)] lg:hidden"
+            className="hidden h-9 w-9 place-items-center rounded-lg border-2 border-ink bg-ink text-paper shadow-[2px_2px_0_var(--color-ink)] md:grid lg:hidden"
           >
             <LayoutGrid className="h-4 w-4" />
           </Link>

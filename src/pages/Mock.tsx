@@ -97,7 +97,7 @@ export default function Mock() {
 
   if (phase === 'intro') {
     return (
-      <div className="w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <div className="w-full px-4 pb-24 md:pb-12 pt-6 sm:px-6 lg:px-8">
         <div className="max-w-[640px]">
           <span className="chip">Mock</span>
           <h1 className="mt-3 text-balance font-display text-3xl font-extrabold leading-tight tracking-tighter sm:text-4xl">
@@ -146,7 +146,7 @@ export default function Mock() {
     })
 
     return (
-      <div className="w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <div className="w-full px-4 pb-24 md:pb-12 pt-6 sm:px-6 lg:px-8">
         <div className="max-w-[860px]">
           <div className="card-pop overflow-hidden">
             <div className="h-1.5 bg-ink" />
@@ -218,7 +218,7 @@ export default function Mock() {
   }
 
   return (
-    <div className="w-full px-4 pb-12 pt-5 sm:px-6 lg:px-8">
+    <div className="w-full px-4 pb-24 md:pb-12 pt-5 sm:px-6 lg:px-8">
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,860px)_minmax(240px,300px)]">
         <div className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-2 shadow-[3px_3px_0_var(--color-ink)]">

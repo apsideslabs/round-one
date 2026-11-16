@@ -24,7 +24,7 @@ export function ResultShell({ track, score, correct, total, note, onRetry, child
     percent >= 85 ? 'Panel-ready.' : percent >= 65 ? 'Almost there.' : percent >= 40 ? 'The pattern is showing.' : 'Start with the basis.'
 
   return (
-    <section className="mx-auto w-full max-w-3xl px-4 pb-12 pt-6 sm:px-6">
+    <section className="mx-auto w-full max-w-3xl px-4 pb-24 md:pb-12 pt-6 sm:px-6">
       <div className="card-pop overflow-hidden">
         <div className="grid items-center gap-5 p-5 sm:grid-cols-[auto_1fr] sm:p-7">
           <motion.div

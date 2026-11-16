@@ -63,7 +63,7 @@ export default function Estimate() {
 
   if (done) {
     return (
-      <section className="mx-auto w-full max-w-2xl px-4 pb-12 pt-5 sm:px-6">
+      <section className="mx-auto w-full max-w-2xl px-4 pb-24 md:pb-12 pt-5 sm:px-6">
         <Link to="/arcade" className="mono-label hover:text-ink">← Arcade</Link>
         <div className="card-pop mt-3 overflow-hidden">
           <div className="h-1.5" style={{ background: game.colour }} />
@@ -104,7 +104,7 @@ export default function Estimate() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl px-4 pb-12 pt-5 sm:px-6">
+    <section className="mx-auto w-full max-w-2xl px-4 pb-24 md:pb-12 pt-5 sm:px-6">
       <Link to="/arcade" className="mono-label hover:text-ink">← Arcade</Link>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-2 shadow-[3px_3px_0_var(--color-ink)]">

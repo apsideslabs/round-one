@@ -86,7 +86,7 @@ export default function Panel() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-3xl px-4 pb-12 pt-5 sm:px-6">
+    <section className="mx-auto w-full max-w-3xl px-4 pb-24 md:pb-12 pt-5 sm:px-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-2 shadow-[3px_3px_0_var(--color-ink)]">
         <div className="flex flex-wrap items-center gap-2">
           <span className="chip" style={{ background: track.soft }}>

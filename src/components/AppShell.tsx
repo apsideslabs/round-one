@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { TopBar } from '@/components/TopBar'
+import { BottomNav } from '@/components/BottomNav'
 import { Sidebar } from '@/components/Sidebar'
 import { CommandPalette } from '@/components/CommandPalette'
 
@@ -27,6 +28,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <BottomNav />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   )
