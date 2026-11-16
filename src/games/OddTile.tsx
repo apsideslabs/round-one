@@ -114,7 +114,7 @@ export default function OddTile() {
   }
 
   return (
-    <section className="w-full px-4 pb-28 pt-5 sm:px-6 lg:px-8">
+    <section className="w-full px-4 pb-12 pt-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-[860px] gap-6 xl:max-w-none xl:grid-cols-[minmax(0,1fr)_minmax(240px,300px)]">
         <div className="min-w-0">
           <Link to="/arcade" className="mono-label hover:text-ink">← Arcade</Link>

@@ -77,7 +77,7 @@ export default function MathsSprint() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl px-4 pb-28 pt-5 sm:px-6">
+    <section className="mx-auto w-full max-w-2xl px-4 pb-12 pt-5 sm:px-6">
       <Link to="/arcade" className="mono-label hover:text-ink">
         ← Arcade
       </Link>

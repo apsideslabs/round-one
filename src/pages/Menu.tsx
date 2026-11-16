@@ -25,7 +25,7 @@ export default function Menu() {
   }
 
   return (
-    <div className="w-full px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+    <div className="w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
       <header className="max-w-[70ch]">
         <span className="chip">Index</span>
         <h1 className="mt-3 text-balance font-display text-3xl font-extrabold leading-tight tracking-tighter sm:text-4xl">

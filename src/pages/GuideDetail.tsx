@@ -18,7 +18,7 @@ export default function GuideDetail() {
   }
 
   return (
-    <article className="mx-auto w-full max-w-2xl px-4 pb-28 pt-6 sm:px-6">
+    <article className="mx-auto w-full max-w-2xl px-4 pb-12 pt-6 sm:px-6">
       <Link to="/guides" className="mono-label inline-flex items-center gap-1.5 hover:text-ink">
         <ArrowLeft className="h-3.5 w-3.5" /> All guides
       </Link>

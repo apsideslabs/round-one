@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { ArrowRight, Puzzle, Repeat, Calculator, Ruler, ListOrdered, Bug, Eye } from 'lucide-react'
 import { games } from '@/data/games'
 import { useProgress } from '@/store/progress'
@@ -18,21 +17,21 @@ export default function Arcade() {
   const gameBests = useProgress((s) => s.gameBests)
 
   return (
-    <div className="w-full px-4 pb-28 pt-7 sm:px-6 lg:px-8">
+    <div className="w-full px-4 pb-12 pt-7 sm:px-6 lg:px-8">
       <span className="chip">Arcade</span>
       <h1 className="mt-3 text-balance font-display text-3xl font-extrabold tracking-tighter sm:text-4xl">
-        Six drills, each mirroring a real interview task
+        {games.length} drills, each mirroring a real interview task
       </h1>
       <p className="mt-2 max-w-[56ch] text-[15px] font-medium leading-relaxed text-ink-2">
         Three train a faculty — deduction, working memory, speed under pressure. Three rehearse an actual interview task: a guesstimate, a prioritisation call, a debugging round. Scores stay separate from your readiness, because a game is a warm-up, not a verdict.
       </p>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {games.map((game, i) => {
+        {games.map((game) => {
           const Icon = icons[game.id] ?? Puzzle
           const best = gameBests[game.id] ?? 0
           return (
-            <motion.div key={game.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <div key={game.id}>
               <Link
                 to={game.path}
                 className="group flex h-full flex-col overflow-hidden rounded-[20px] border-2 border-ink bg-card shadow-[5px_5px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5"
@@ -54,7 +53,7 @@ export default function Arcade() {
                   </span>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           )
         })}
       </div>
