@@ -13,6 +13,7 @@ import { QUESTION_COUNT } from '@/data/tracks'
 export default function Home() {
   const scores = useProgress((s) => s.scores)
   const ready = readiness(scores)
+  const roundWord = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][tracks.length] ?? String(tracks.length)
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
@@ -21,13 +22,13 @@ export default function Home() {
           <div>
             <span className="chip border-white/35 bg-white/10 text-white">
               <span className="h-2 w-2 rounded-full bg-c1" />
-              {QUESTION_COUNT} questions · 4 rounds
+              {QUESTION_COUNT} questions · {tracks.length} rounds
             </span>
             <h1 className="mt-3 text-balance font-display text-4xl font-extrabold leading-[0.95] tracking-tighter sm:text-6xl">
               Train the rounds that <em className="not-italic text-c3 underline decoration-c1 decoration-[0.1em] underline-offset-4">cut people.</em>
             </h1>
             <p className="mt-3 max-w-[42ch] text-[15px] font-medium leading-relaxed text-white/70">
-              Four rounds, one panel. Practise what the interview actually tests.
+              {roundWord} rounds, one panel. Practise what the interview actually tests.
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5">
               <Button variant="accent" asChild>

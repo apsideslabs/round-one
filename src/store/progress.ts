@@ -36,7 +36,18 @@ export const useProgress = create<ProgressState>()(
       toggleMute: () => set((state) => ({ muted: !state.muted })),
       reset: () => set({ scores: { ...emptyScores }, xp: 0, attempts: 0, lastRound: null })
     }),
-    { name: 'round-one-progress' }
+    {
+      name: 'round-one-progress',
+      version: 2,
+      // saves written before the morality round lack that key; fill it in
+      migrate: (persisted) => {
+        const old = (persisted ?? {}) as Partial<ProgressState>
+        return {
+          ...old,
+          scores: { ...emptyScores, ...(old.scores ?? {}) }
+        } as ProgressState
+      }
+    }
   )
 )
 

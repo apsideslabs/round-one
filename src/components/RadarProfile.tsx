@@ -11,10 +11,11 @@ export function RadarProfile({ scores }: { scores: Scores }) {
   const cx = size / 2
   const cy = size / 2 - 2
   const R = 74
+  const n = tracks.length
   const values = tracks.map((t) => pct(scores[t.id as TrackId] ?? 0, t.max) / 100)
 
   const point = (i: number, scale: number) => {
-    const angle = -Math.PI / 2 + (i * Math.PI) / 2
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n
     return [cx + Math.cos(angle) * R * scale, cy + Math.sin(angle) * R * scale] as const
   }
 
@@ -22,7 +23,6 @@ export function RadarProfile({ scores }: { scores: Scores }) {
     tracks.map((_, i) => point(i, scale).map((n) => n.toFixed(1)).join(',')).join(' ')
 
   const dataPoints = tracks.map((_, i) => point(i, Math.max(values[i], 0.02)))
-  const labels = ['Logic', 'Memory', 'Riddles', 'Panel']
 
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto h-[220px] w-full max-w-[240px]" role="img" aria-label="Score profile across the four rounds">
@@ -43,14 +43,15 @@ export function RadarProfile({ scores }: { scores: Scores }) {
       {dataPoints.map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r={3.2} fill="#ff4b26" stroke="#12151a" strokeWidth={1.4} />
       ))}
-      {labels.map((label, i) => {
-        const [x, y] = point(i, 1.28)
+      {tracks.map((track, i) => {
+        const [x, y] = point(i, 1.26)
+        const angle = (i * 360) / n
         return (
           <text
-            key={label}
+            key={track.id}
             x={x}
             y={y}
-            textAnchor={i === 1 ? 'start' : i === 3 ? 'end' : 'middle'}
+            textAnchor={angle > 20 && angle < 160 ? 'start' : angle > 200 && angle < 340 ? 'end' : 'middle'}
             dominantBaseline="middle"
             fontFamily="JetBrains Mono, monospace"
             fontSize={8.5}
@@ -58,7 +59,7 @@ export function RadarProfile({ scores }: { scores: Scores }) {
             letterSpacing="0.08em"
             fill="#6b727d"
           >
-            {label.toUpperCase()}
+            {track.short.toUpperCase()}
           </text>
         )
       })}

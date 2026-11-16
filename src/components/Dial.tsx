@@ -5,7 +5,8 @@ import type { Scores } from '@/store/progress'
 export function Dial({ scores, readiness }: { scores: Scores; readiness: number }) {
   const r = 56
   const c = 2 * Math.PI * r
-  const quarter = c / 4
+  const segments = tracks.length
+  const slice = c / segments
   const gap = 6
 
   return (
@@ -14,7 +15,7 @@ export function Dial({ scores, readiness }: { scores: Scores; readiness: number 
         <circle cx="80" cy="80" r={r} fill="none" stroke="#eceae2" strokeWidth={13} />
         {tracks.map((t, i) => {
           const value = pct(scores[t.id as TrackId] ?? 0, t.max)
-          const len = Math.max(0, (quarter * value) / 100 - gap)
+          const len = Math.max(0, (slice * value) / 100 - gap)
           return (
             <circle
               key={t.id}
@@ -25,7 +26,7 @@ export function Dial({ scores, readiness }: { scores: Scores; readiness: number 
               stroke={t.colour}
               strokeWidth={13}
               strokeDasharray={`${len} ${c - len}`}
-              transform={`rotate(${i * 90 - 90} 80 80)`}
+              transform={`rotate(${(i * 360) / segments - 90} 80 80)`}
               className="transition-[stroke-dasharray] duration-700"
             />
           )

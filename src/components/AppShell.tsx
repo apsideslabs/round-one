@@ -26,7 +26,7 @@ export function AppShell() {
       </main>
       <footer className="border-t-2 border-ink px-4 py-5 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
-          <span className="mono-label">Round One · aptitude → logic → memory → the panel</span>
+          <span className="mono-label">Round One · logic → memory → riddles → panel → morality</span>
           <span className="mono-label">Built with React, Vite and Tailwind</span>
         </div>
       </footer>
