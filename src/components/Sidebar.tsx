@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarChart3, BookOpen, Clock, Home, Languages, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
+import { BarChart3, BookOpen, Clock, FlaskConical, Home, Languages, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -65,6 +65,12 @@ export function Sidebar() {
           })}
         </ul>
 
+
+        <NavLink to="/lab" className={({ isActive }) => cn(item, 'mt-1 border-2 border-dashed border-ink/40', isActive && active)}>
+          <FlaskConical className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">Workspace</span>
+          <span className="font-mono text-[9px] font-bold text-ink-3">lab</span>
+        </NavLink>
 
         <NavLink to="/mock" className={({ isActive }) => cn(item, 'mt-1 border-2 border-dashed border-ink/40', isActive && active)}>
           <Clock className="h-4 w-4 shrink-0" />
