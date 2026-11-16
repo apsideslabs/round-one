@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import { ShareCard } from '@/components/ShareCard'
 import { RadarProfile } from '@/components/RadarProfile'
 import type { Track } from '@/data/tracks'
 import { useProgress } from '@/store/progress'
@@ -86,6 +87,7 @@ export function ResultShell({ track, score, correct, total, note, onRetry, child
         <Button variant="accent" onClick={onRetry} className="flex-1">
           Run this round again
         </Button>
+        <ShareCard trackName={track.name} colour={track.colour} score={score} max={track.max} correct={correct} total={total} />
         <Button variant="light" asChild className="flex-1">
           <Link to="/">Back to home</Link>
         </Button>

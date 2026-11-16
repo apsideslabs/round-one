@@ -133,7 +133,15 @@ export default function Memory() {
       </div>
 
       <motion.div key={`${briefIndex}-${qIndex}-${phase}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-pop overflow-hidden">
-        <div className="h-1.5" style={{ background: track.colour }} />
+        <div className="h-1.5 w-full bg-[#e8e5dc]">
+          <div
+            className="h-full transition-[width] duration-1000 ease-linear"
+            style={{
+              width: phase === 'view' ? `${Math.max(0, Math.min(1, left / brief.seconds)) * 100}%` : '0%',
+              background: left <= 4 && phase === 'view' ? '#e13b2b' : track.colour
+            }}
+          />
+        </div>
         <div className="p-5 sm:p-7">
           {phase === 'view' ? (
             <>
@@ -146,7 +154,13 @@ export default function Memory() {
               <h2 className="mb-1.5 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Memorise this brief.</h2>
               <p className="mb-4 text-[13px] font-medium text-ink-3">It disappears when the clock runs out. Three questions follow.</p>
 
-              <dl className="grid gap-2 sm:grid-cols-2">
+              <dl
+                className="grid gap-2 transition-all duration-500 sm:grid-cols-2"
+                style={{
+                  filter: `blur(${Math.min(2.2, Math.max(0, (3 - left) * 0.7))}px)`,
+                  opacity: left <= 1 ? 0.45 : 1
+                }}
+              >
                 {brief.facts.map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between gap-3 rounded-lg border-2 border-ink bg-card px-3 py-2 shadow-[2px_2px_0_var(--color-ink)]">
                     <dt className="font-mono text-[9px] font-bold uppercase tracking-wider text-ink-3">{k}</dt>
@@ -156,7 +170,9 @@ export default function Memory() {
               </dl>
 
               <div className="mt-4 flex items-center justify-between gap-3">
-                <span className="mono-label">Seconds to read, then it’s gone</span>
+                <span className={`mono-label ${left <= 4 ? 'text-bad' : ''}`}>
+                  {left <= 4 ? 'closing — read what you still can' : 'seconds to read, then it’s gone'}
+                </span>
                 <Button size="sm" onClick={() => setPhase('quiz')}>
                   Got it →
                 </Button>
