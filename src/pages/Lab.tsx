@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import { Check, Grid2x2, RotateCcw, Sparkles } from 'lucide-react'
-import { MirrorBeam } from '@/lab/MirrorBeam'
+import { Optics } from '@/lab/Optics'
 import { FloodMaze } from '@/lab/FloodMaze'
 import { WaveMatch } from '@/lab/WaveMatch'
-import { Slingshot } from '@/lab/Slingshot'
+import { Projectile } from '@/lab/Projectile'
 import { FoldNet } from '@/lab/FoldNet'
 
 const STORE = 'round-one.lab.v1'
@@ -17,10 +17,10 @@ interface Stage {
 
 const STAGES: Stage[] = [
   {
-    id: 'mirror',
-    name: 'Mirror & beam',
-    objective: 'Drag anywhere to turn the mirror until the beam lands in the target.',
-    render: () => <MirrorBeam />
+    id: 'optics',
+    name: 'Optics bench',
+    objective: 'Change the angle. Mirror mode keeps θᵢ = θᵣ; slab mode bends the ray by Snell.',
+    render: () => <Optics />
   },
   {
     id: 'maze',
@@ -29,10 +29,10 @@ const STAGES: Stage[] = [
     render: () => <FloodMaze />
   },
   {
-    id: 'slingshot',
-    name: 'Slingshot',
-    objective: 'Drag back from the orb and release — let the wells bend the shot into the target.',
-    render: () => <Slingshot />
+    id: 'projectile',
+    name: 'Projectile',
+    objective: 'Set speed, angle and drag. The dashed arc is the same RK4 model that flies the shot.',
+    render: () => <Projectile />
   },
   {
     id: 'fold',
