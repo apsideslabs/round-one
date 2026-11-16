@@ -2,6 +2,13 @@ import { useState, type ReactNode } from 'react'
 import { Check, Grid2x2, RotateCcw, Sparkles } from 'lucide-react'
 import { Optics } from '@/lab/Optics'
 import { SetLogic } from '@/lab/SetLogic'
+import { SortingRace } from '@/lab/SortingRace'
+import { Pathfind } from '@/lab/Pathfind'
+import { MatrixLab } from '@/lab/MatrixLab'
+import { Bayes } from '@/lab/Bayes'
+import { MontyHall } from '@/lab/MontyHall'
+import { Harmonics } from '@/lab/Harmonics'
+import { Spring } from '@/lab/Spring'
 import { FloodMaze } from '@/lab/FloodMaze'
 import { WaveMatch } from '@/lab/WaveMatch'
 import { Projectile } from '@/lab/Projectile'
@@ -46,6 +53,48 @@ const STAGES: Stage[] = [
     name: 'Fold the net',
     objective: 'Scrub the slider to fold a flat net into a box.',
     render: () => <FoldNet />
+  },
+  {
+    id: 'sorting',
+    name: 'Sorting race',
+    objective: 'Drag n. Bubble and merge sort the same array — compare the comparison counts.',
+    render: () => <SortingRace />
+  },
+  {
+    id: 'pathfind',
+    name: 'Dijkstra',
+    objective: 'Tap to add walls. Mud costs 5 — watch Dijkstra route around it while BFS would not.',
+    render: () => <Pathfind />
+  },
+  {
+    id: 'matrix',
+    name: 'Matrix',
+    objective: 'Drag a, b, c, d. The unit square transforms; the determinant is the area scale.',
+    render: () => <MatrixLab />
+  },
+  {
+    id: 'bayes',
+    name: 'Bayes',
+    objective: 'Set prevalence, sensitivity and false positives. Read the posterior off a hundred people.',
+    render: () => <Bayes />
+  },
+  {
+    id: 'monty',
+    name: 'Monty Hall',
+    objective: 'Pick a door, then run thousands of trials and watch stay against switch.',
+    render: () => <MontyHall />
+  },
+  {
+    id: 'harmonics',
+    name: 'Harmonics',
+    objective: 'Add odd harmonics to the rotating circles and watch the square wave appear.',
+    render: () => <Harmonics />
+  },
+  {
+    id: 'spring',
+    name: 'Spring',
+    objective: 'Change mass, stiffness and damping. ζ decides whether it rings, settles or crawls.',
+    render: () => <Spring />
   },
   {
     id: 'wave',
@@ -94,13 +143,13 @@ export default function Lab() {
             <span className="truncate text-[13px] font-bold text-ink-3">blank stage</span>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex max-w-full items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:thin]">
           {STAGES.map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => setStageId(s.id)}
-              className={`rounded-lg border-2 border-ink px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider ${
+              className={`shrink-0 whitespace-nowrap rounded-lg border-2 border-ink px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider ${
                 stageId === s.id ? 'bg-c1 text-white' : 'bg-card'
               }`}
             >
@@ -110,8 +159,8 @@ export default function Lab() {
           <button
             type="button"
             onClick={() => setStageId(null)}
-            aria-label="Blank stage"
-            className={`grid h-7 w-7 place-items-center rounded-lg border-2 border-ink ${stageId === null ? 'bg-c1 text-white' : 'bg-card'}`}
+            aria-label="Blank stage" 
+            className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 border-ink ${stageId === null ? 'bg-c1 text-white' : 'bg-card'}`}
           >
             <Grid2x2 className="h-3.5 w-3.5" />
           </button>
