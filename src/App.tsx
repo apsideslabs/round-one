@@ -7,6 +7,7 @@ const Logic = lazy(() => import('@/pages/Logic'))
 const Memory = lazy(() => import('@/pages/Memory'))
 const Riddles = lazy(() => import('@/pages/Riddles'))
 const Panel = lazy(() => import('@/pages/Panel'))
+const Morality = lazy(() => import('@/pages/Morality'))
 const Guides = lazy(() => import('@/pages/Guides'))
 const GuideDetail = lazy(() => import('@/pages/GuideDetail'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="memory" element={<Memory />} />
         <Route path="riddles" element={<Riddles />} />
         <Route path="panel" element={<Panel />} />
+        <Route path="morality" element={<Morality />} />
         <Route path="guides" element={<Guides />} />
         <Route path="guides/:slug" element={<GuideDetail />} />
         <Route path="*" element={<NotFound />} />

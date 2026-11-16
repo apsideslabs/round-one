@@ -2,12 +2,12 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { Command } from 'cmdk'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, BarChart3, Layers, Sparkles, Users, Home, RotateCcw, Volume2 } from 'lucide-react'
+import { BookOpen, BarChart3, Layers, Sparkles, Users, Home, RotateCcw, Volume2, Scale } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { guides } from '@/data/guides'
 import { useProgress } from '@/store/progress'
 
-const icons = { logic: BarChart3, memory: Layers, riddles: Sparkles, panel: Users }
+const icons = { logic: BarChart3, memory: Layers, riddles: Sparkles, panel: Users, morality: Scale }
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const navigate = useNavigate()

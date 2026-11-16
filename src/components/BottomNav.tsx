@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, BarChart3, Layers, Sparkles, Users, BookOpen } from 'lucide-react'
+import { Home, BarChart3, Layers, Sparkles, Users, Scale } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const items = [
@@ -8,7 +8,7 @@ const items = [
   { to: '/memory', label: 'Memory', icon: Layers },
   { to: '/riddles', label: 'Riddles', icon: Sparkles },
   { to: '/panel', label: 'Panel', icon: Users },
-  { to: '/guides', label: 'Guides', icon: BookOpen }
+  { to: '/morality', label: 'Morality', icon: Scale }
 ]
 
 export function BottomNav() {
