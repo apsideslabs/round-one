@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RotateCcw, ChevronRight, Clock, Check, X } from 'lucide-react'
 import { Person, Bubble, Defs, type Mood } from '@/components/comic/Faces'
-import { drawQuestions, cvQuestions, followFor, type Opt, type Panel, type Q, type Follow } from '@/data/scene'
-import { readCV, saveCV, loadCV, type Profile } from '@/lib/cv'
+import { drawQuestions, followFor, type Opt, type Panel, type Q, type Follow } from '@/data/scene'
+import { saveCV, loadCV } from '@/lib/cv'
+import { parseCV } from '@/lib/cvintel'
+import { buildPersonalQuestions } from '@/data/personal'
 
 const JUDGES = [
   { name: 'P·ONE', role: 'technical', colour: '#2f5bff' },
@@ -18,11 +20,14 @@ export default function Interview() {
   const [seed, setSeed] = useState(0)
   const [cvText, setCvText] = useState(() => loadCV())
   const [showCV, setShowCV] = useState(() => loadCV().trim().length === 0)
-  const profile: Profile = useMemo(() => readCV(cvText), [cvText])
+  const intel = useMemo(() => parseCV(cvText), [cvText])
+  const personal = useMemo(() => buildPersonalQuestions(intel), [intel])
   const questions = useMemo(() => {
-    const base = drawQuestions().slice(0, 8)
-    return profile.empty ? drawQuestions() : [...base, ...cvQuestions(profile)]
-  }, [seed, profile])
+    if (intel.empty) return drawQuestions()
+    // a real interview opens on your CV, then moves to the standard bank
+    const base = drawQuestions().slice(0, Math.max(4, 12 - personal.length))
+    return [...personal, ...base]
+  }, [seed, intel, personal])
   const [idx, setIdx] = useState(0)
   const [scores, setScores] = useState<Panel>([0, 0, 0])
   const [phase, setPhase] = useState<'ask' | 'follow' | 'debrief' | 'final'>('ask')
@@ -110,7 +115,7 @@ export default function Interview() {
           <button type="button" onClick={() => setShowCV((v) => !v)} className="flex w-full items-center gap-2 px-3 py-2 text-left">
             <span className="mono-label">your cv</span>
             <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-ink-3">
-              {profile.empty ? 'paste it — the questions will adapt to your skills' : `${profile.skills.slice(0, 4).join(' · ') || 'read'}${profile.hasInternship ? ' · internship' : ' · no internship'}`}
+              {intel.empty ? 'paste it — the questions will quote your own lines' : `${personal.length} questions written from your CV`}
             </span>
             <ChevronRight className={`h-3.5 w-3.5 shrink-0 transition-transform ${showCV ? 'rotate-90' : ''}`} />
           </button>
@@ -125,12 +130,33 @@ export default function Interview() {
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 <button type="button" onClick={() => { saveCV(cvText); setShowCV(false); setSeed((s) => s + 1); setIdx(0); setPhase('ask'); setLog([]); setScores([0, 0, 0]) }}
                   className="rounded-lg border-2 border-ink bg-c2 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wider shadow-[2px_2px_0_var(--color-ink)]">
-                  adapt the questions
+                  build the interview
                 </button>
                 <span className="text-[11px] font-medium text-ink-3">
-                  {profile.skills.length ? `found ${profile.skills.length} skills` : 'no skills recognised yet'}
+                  {intel.skills.length ? `${intel.skills.length} skills` : 'no skills yet'}
+                  {intel.projects.length ? ` · ${intel.projects.length} projects` : ''}
+                  {intel.metrics.length ? ` · ${intel.metrics.length} numbers` : ' · no numbers'}
                 </span>
               </div>
+              {!intel.empty && (
+                <div className="mt-2 grid gap-1.5 rounded-lg border-2 border-ink/20 bg-paper p-2">
+                  <p className="mono-label">what i read</p>
+                  <div className="flex flex-wrap gap-1">
+                    {intel.projects.slice(0, 3).map((p) => (
+                      <span key={p} className="rounded border border-ink bg-c3-soft px-1.5 py-0.5 font-mono text-[9px] font-bold">project: {p.slice(0, 28)}</span>
+                    ))}
+                    {intel.metrics.slice(0, 4).map((m) => (
+                      <span key={m} className="rounded border border-ink bg-c2-soft px-1.5 py-0.5 font-mono text-[9px] font-bold">number: {m}</span>
+                    ))}
+                    {intel.verbs.slice(0, 4).map((v) => (
+                      <span key={v} className="rounded border border-ink bg-c1-soft px-1.5 py-0.5 font-mono text-[9px] font-bold">verb: {v}</span>
+                    ))}
+                    {intel.skills.slice(0, 6).map((sk) => (
+                      <span key={sk} className="rounded border border-ink/40 bg-[#f4f2ea] px-1.5 py-0.5 font-mono text-[9px] font-bold">{sk}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
