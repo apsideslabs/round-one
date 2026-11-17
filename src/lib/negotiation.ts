@@ -1,29 +1,36 @@
 /**
- * Salary negotiation as a state machine with hidden information. The employer's
- * ceiling is never shown; you can only infer it from what they say and from the
- * annexure you ask for. Nothing is random — the same moves give the same result,
- * because negotiation is a game of information, not luck.
+ * A negotiation engine with real Indian payroll and real multi-dimensional
+ * trades. Money is only one axis: bond, notice period, probation and grade all
+ * cost or buy something later. The employer's ceiling and urgency are hidden;
+ * you buy information with turns.
  */
 export type Move =
-  | 'justify' | 'anchor' | 'competing' | 'structure' | 'joining'
-  | 'relocation' | 'annexure' | 'time' | 'concede' | 'walk'
+  | 'justify' | 'anchor' | 'competing' | 'structure' | 'joining' | 'relocation'
+  | 'annexure' | 'askBand' | 'askVariable' | 'askBond' | 'askUrgency'
+  | 'tradeNotice' | 'time' | 'concede' | 'walk'
 
 export type Archetype = 'service' | 'product' | 'consultancy'
 
 export interface Employer {
   id: Archetype
   name: string
+  recruiter: string
+  role: string
   opening: number
   ceiling: number
   patience: number
   variablePct: number
+  variablePaid: number // what they actually paid last year, as % of target
+  bond: number // years of service agreement, 0 if none
+  notice: number // months
+  probation: number // months
   style: string
 }
 
 export const EMPLOYERS: Record<Archetype, Employer> = {
-  service: { id: 'service', name: 'Meridian Services', opening: 5.9, ceiling: 7.2, patience: 7, variablePct: 12, style: 'volume hiring, standard bands, needs approvals' },
-  product: { id: 'product', name: 'Kettle Labs', opening: 7.6, ceiling: 11.4, patience: 5, variablePct: 8, style: 'small team, fast decisions, hates process' },
-  consultancy: { id: 'consultancy', name: 'Ardent Advisory', opening: 6.4, ceiling: 8.3, patience: 8, variablePct: 18, style: 'grades and bands, everything in writing' }
+  service: { id: 'service', name: 'Meridian Services', recruiter: 'Priya Raman', role: 'Talent Acquisition', opening: 5.9, ceiling: 7.2, patience: 7, variablePct: 12, variablePaid: 55, bond: 2, notice: 3, probation: 6, style: 'volume hiring · standard bands · approvals' },
+  product: { id: 'product', name: 'Kettle Labs', recruiter: 'Ananya Rao', role: 'Engineering Manager', opening: 7.6, ceiling: 11.4, patience: 5, variablePct: 8, variablePaid: 90, bond: 0, notice: 2, probation: 3, style: 'small team · fast decisions · hates process' },
+  consultancy: { id: 'consultancy', name: 'Ardent Advisory', recruiter: 'Meera Iyer', role: 'Campus Hiring Lead', opening: 6.4, ceiling: 8.3, patience: 8, variablePct: 18, variablePaid: 70, bond: 1, notice: 3, probation: 6, style: 'grades and bands · everything in writing' }
 }
 
 export interface Line { who: 'you' | 'them' | 'note'; text: string }
@@ -37,15 +44,23 @@ export interface NegState {
   variablePct: number
   joining: number
   relocation: number
+  bond: number
+  notice: number
+  grade: number
   usedCompeting: boolean
   usedJustify: number
   usedAnnexure: boolean
+  usedVariable: boolean
+  usedBond: boolean
+  usedUrgency: boolean
+  usedTrade: boolean
   revealedCeiling: boolean
   over: boolean
   outcome: 'deal' | 'lowball' | 'withdrawn' | 'walked' | null
   log: Line[]
   mood: 'neutral' | 'warm' | 'cold'
   tell: string
+  typing: boolean
 }
 
 const clamp = (n: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n))
@@ -60,32 +75,21 @@ const OPENINGS: Record<Archetype, string> = {
 export function makeState(id: Archetype = 'service'): NegState {
   const emp = EMPLOYERS[id]
   return {
-    emp,
-    offer: emp.opening,
-    opening: emp.opening,
-    leverage: 42,
-    turns: emp.patience,
-    variablePct: emp.variablePct,
-    joining: 0,
-    relocation: 0,
-    usedCompeting: false,
-    usedJustify: 0,
-    usedAnnexure: false,
-    revealedCeiling: false,
-    over: false,
-    outcome: null,
-    mood: 'neutral',
-    tell: 'checks the time',
+    emp, offer: emp.opening, opening: emp.opening, leverage: 42, turns: emp.patience,
+    variablePct: emp.variablePct, joining: 0, relocation: 0, bond: emp.bond, notice: emp.notice, grade: 2,
+    usedCompeting: false, usedJustify: 0, usedAnnexure: false, usedVariable: false, usedBond: false,
+    usedUrgency: false, usedTrade: false, revealedCeiling: false, over: false, outcome: null,
+    mood: 'neutral', tell: 'checks the time', typing: false,
     log: [{ who: 'them', text: OPENINGS[id] }]
   }
 }
 
 export function play(s: NegState, move: Move): NegState {
   if (s.over) return s
-  const st: NegState = { ...s, log: [...s.log], turns: s.turns - 1 }
+  const st: NegState = { ...s, log: [...s.log], turns: s.turns - 1, typing: false }
   const say = (who: Line['who'], text: string) => st.log.push({ who, text })
   const raise = (by: number) => { st.offer = r1(Math.min(st.emp.ceiling, st.offer + by)) }
-  const nudgeMood = (d: number) => {
+  const mood = (d: number) => {
     const v = (st.mood === 'warm' ? 1 : st.mood === 'cold' ? -1 : 0) + d
     st.mood = v > 0 ? 'warm' : v < 0 ? 'cold' : 'neutral'
   }
@@ -93,12 +97,12 @@ export function play(s: NegState, move: Move): NegState {
   switch (move) {
     case 'justify': {
       if (st.usedJustify >= 2) {
-        st.leverage = clamp(st.leverage - 8); nudgeMood(-1)
+        st.leverage = clamp(st.leverage - 9); mood(-1)
         say('you', 'As I mentioned, the published band is higher.')
         say('them', 'You have said that. Twice. — It is not that I disagree, it is that repeating it does not move a grade.')
       } else {
         st.usedJustify++
-        st.leverage = clamp(st.leverage + 13); nudgeMood(1)
+        st.leverage = clamp(st.leverage + 13); mood(1)
         raise(st.emp.id === 'product' ? 0.5 : 0.35)
         say('you', 'The band for this role in this city is published — I am asking inside it, not above it.')
         say('them', st.emp.id === 'product'
@@ -118,13 +122,13 @@ export function play(s: NegState, move: Move): NegState {
     }
     case 'competing': {
       if (st.usedCompeting) {
-        st.leverage = clamp(st.leverage - 28); nudgeMood(-2)
+        st.leverage = clamp(st.leverage - 30); mood(-2)
         say('you', 'I do have another offer.')
         say('them', 'You have said that. — I will be blunt: the first time it is information, the second time it is a script.')
         st.offer = r1(Math.max(st.opening, st.offer - 0.2))
       } else {
         st.usedCompeting = true
-        st.leverage = clamp(st.leverage + 24); nudgeMood(1)
+        st.leverage = clamp(st.leverage + 24); mood(1)
         raise(st.emp.id === 'product' ? 0.9 : 0.6)
         say('you', 'I have an offer at a higher fixed number, but your team is my first choice.')
         say('them', st.emp.id === 'product'
@@ -168,6 +172,53 @@ export function play(s: NegState, move: Move): NegState {
       }
       break
     }
+    case 'askVariable': {
+      if (st.usedVariable) { say('them', 'I told you — sixty per cent last year. It is in the annexure.'); break }
+      st.usedVariable = true
+      st.leverage = clamp(st.leverage + 6)
+      say('you', 'What did the variable actually pay out last year?')
+      say('them', st.emp.variablePaid < 70
+        ? `…About ${st.emp.variablePaid} per cent of target. It has been a hard year. I would not build a budget on it.`
+        : `${st.emp.variablePaid} per cent of target, paid in full. That part is reliable.`)
+      break
+    }
+    case 'askBond': {
+      if (st.usedBond) { say('them', 'Two years, as I said. It is standard for the training.'); break }
+      st.usedBond = true
+      st.leverage = clamp(st.leverage + 5)
+      say('you', 'Is there a service agreement or bond attached?')
+      say('them', st.bond > 0
+        ? `Yes — ${st.bond} year${st.bond > 1 ? 's' : ''}, with training cost recovery if you leave early. It is in the letter, most people do not read that page.`
+        : 'No bond. We do not do that here.')
+      break
+    }
+    case 'askUrgency': {
+      if (st.usedUrgency) { say('them', 'I told you already. Thursday.'); break }
+      st.usedUrgency = true
+      st.leverage = clamp(st.leverage + 11)
+      say('you', 'Can I ask — how many offers are you still holding for this role?')
+      say('them', st.emp.id === 'product'
+        ? 'Two. And my founder is asking why this is not closed. …That stays between us.'
+        : 'Two of three seats are filled. I need to close the third by Thursday. — I should not have said that either.')
+      break
+    }
+    case 'askBand': {
+      st.leverage = clamp(st.leverage + 4)
+      say('you', 'What grade is this role, and what does the band look like?')
+      say('them', `Grade G${st.grade}. The band runs to about ₹${st.emp.ceiling.toFixed(1)} L for this grade — after that it is a different requisition.`)
+      st.revealedCeiling = true
+      break
+    }
+    case 'tradeNotice': {
+      if (st.usedTrade) { say('them', 'One trade per conversation.'); break }
+      st.usedTrade = true
+      st.notice = Math.max(st.notice, 3)
+      st.leverage = clamp(st.leverage - 6)
+      raise(0.45)
+      say('you', 'If I accept a ninety-day notice period, does that help on the fixed number?')
+      say('them', 'It does — it costs us less to plan around you. I can move the fixed. Ninety days, in writing.')
+      break
+    }
     case 'time': {
       st.turns += 1
       st.leverage = clamp(st.leverage - 4)
@@ -176,7 +227,7 @@ export function play(s: NegState, move: Move): NegState {
       break
     }
     case 'concede': {
-      st.leverage = clamp(st.leverage - 12); nudgeMood(1)
+      st.leverage = clamp(st.leverage - 12); mood(1)
       say('you', 'I am happy to accept what you have on the table.')
       say('them', 'Good. — I mean, that is great news. I will get the letter out today. Or tomorrow morning.')
       st.over = true
@@ -227,31 +278,57 @@ export interface Payslip {
   variable: number
   employerPf: number
   gratuity: number
+  insurance: number
   employeePf: number
+  pt: number
   tax: number
   inHandMonthly: number
-  firstYearCash: number
 }
 
-/** The offer letter, decomposed — same maths as the offer desk, kept honest. */
-export function payslip(ctcLakh: number, variablePct: number, joining = 0): Payslip {
+const PF_CEILING_BASIC = 15000 * 12
+const PT = 2400
+const INSURANCE = 8000
+
+/** New-regime slabs with the 87A rebate, FY 2025-26. */
+export function taxNewRegime(taxable: number): number {
+  const slabs: Array<[number, number, number]> = [
+    [0, 400000, 0], [400000, 800000, 0.05], [800000, 1200000, 0.1],
+    [1200000, 1600000, 0.15], [1600000, 2000000, 0.2], [2000000, 2400000, 0.25], [2400000, Infinity, 0.3]
+  ]
+  let tax = 0
+  for (const [lo, hi, rate] of slabs) if (taxable > lo) tax += (Math.min(taxable, hi) - lo) * rate
+  if (taxable <= 1200000) tax = Math.max(0, tax - 60000)
+  return Math.round(tax * 1.04)
+}
+
+/** Basic at 40% of fixed gross, HRA at half of basic, PF capped at ₹15,000. */
+export function payslip(ctcLakh: number, variablePct: number): Payslip {
   const ctc = ctcLakh * 100000
   const variable = (ctc * variablePct) / 100
   const fixedCtc = ctc - variable
-  const basic = fixedCtc * 0.5 * 0.88
-  const employerPf = 0.12 * basic
+  const basic = fixedCtc * 0.4 * 0.9
+  const employerPf = 0.12 * Math.min(basic, PF_CEILING_BASIC)
   const gratuity = 0.0481 * basic
-  const insurance = 8000
-  const fixedGross = fixedCtc - employerPf - gratuity - insurance
-  const hra = basic * 0.4
+  const fixedGross = fixedCtc - employerPf - gratuity - INSURANCE
+  const hra = basic * 0.5
   const special = fixedGross - basic - hra
-  const employeePf = 0.12 * basic
+  const employeePf = 0.12 * Math.min(basic, PF_CEILING_BASIC)
   const taxable = Math.max(0, fixedGross - 75000)
-  const slab = taxable <= 1200000 ? 0 : taxable * 0.1
-  const tax = slab * 1.04
-  const inHandMonthly = Math.round((fixedGross - employeePf - 2400 - tax) / 12)
-  return {
-    ctc, fixedGross, basic, hra, special, variable, employerPf, gratuity,
-    employeePf, tax, inHandMonthly, firstYearCash: fixedGross - employeePf - tax + joining
-  }
+  const tax = taxNewRegime(taxable)
+  const inHandMonthly = Math.round((fixedGross - employeePf - PT - tax) / 12)
+  return { ctc, fixedGross, basic, hra, special, variable, employerPf, gratuity, insurance: INSURANCE, employeePf, pt: PT, tax, inHandMonthly }
+}
+
+/** Cash plus what the terms cost you later. */
+export function score(s: NegState): { cash: number; termsCost: number; net: number; notes: string[] } {
+  const p = payslip(s.offer, s.variablePct)
+  const guaranteedFirstYear = p.fixedGross - p.employeePf - p.tax
+  const cash = guaranteedFirstYear + s.joining + s.relocation
+  const notes: string[] = []
+  const bondCost = s.bond * 90000
+  const noticeCost = Math.max(0, s.notice - 2) * 40000
+  if (s.bond > 0) notes.push(`${s.bond}-year bond: you cannot leave without a recovery bill`)
+  if (s.notice > 2) notes.push(`${s.notice}-month notice: your next employer waits, or passes`)
+  if (s.variablePct >= 15) notes.push(`${s.variablePct}% variable — paid at ${s.emp.variablePaid}% of target last year`)
+  return { cash, termsCost: bondCost + noticeCost, net: cash - bondCost - noticeCost, notes }
 }

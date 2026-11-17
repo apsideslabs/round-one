@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { makeState, play, payslip, EMPLOYERS } from './negotiation'
+import { makeState, play, payslip, score, taxNewRegime, EMPLOYERS } from './negotiation'
 
 describe('negotiation', () => {
   it('leveraged moves beat conceding on the same employer', () => {
@@ -52,11 +52,39 @@ describe('negotiation', () => {
     expect(run('product')).toBeGreaterThan(run('service'))
   })
 
-  it('converts CTC to a full letter that adds up', () => {
+  it('builds a letter that adds up to the rupee', () => {
     const p = payslip(6, 12)
-    expect(p.inHandMonthly).toBeGreaterThan(30000)
-    expect(p.inHandMonthly).toBeLessThan(45000)
     expect(p.basic + p.hra + p.special).toBeCloseTo(p.fixedGross, 0)
     expect(p.variable).toBeCloseTo(72000, 0)
+    expect(p.inHandMonthly).toBeGreaterThan(30000)
+    expect(p.inHandMonthly).toBeLessThan(46000)
+  })
+
+  it('taxes the new regime correctly at the rebate edge', () => {
+    expect(taxNewRegime(1200000)).toBe(0) // 87A wipes it
+    expect(taxNewRegime(1600000)).toBeGreaterThan(90000)
+    expect(taxNewRegime(0)).toBe(0)
+  })
+
+  it('charges the terms: a bond and a long notice cost real money', () => {
+    const clean = { ...makeState('product') }
+    const bound = { ...makeState('service'), bond: 2, notice: 3 }
+    expect(score(bound).termsCost).toBeGreaterThan(score(clean).termsCost)
+    expect(score(bound).notes.join(' ')).toMatch(/bond/)
+  })
+
+  it('trading a longer notice for fixed money moves the offer up', () => {
+    const a = makeState('consultancy')
+    const b = play(a, 'tradeNotice')
+    expect(b.offer).toBeGreaterThan(a.offer)
+    expect(b.notice).toBeGreaterThanOrEqual(3)
+  })
+
+  it('asking about urgency and variable payout reveals what they would hide', () => {
+    let s = makeState('service')
+    s = play(s, 'askUrgency')
+    expect(s.log.at(-1)?.text).toMatch(/Thursday|seats/)
+    s = play(s, 'askVariable')
+    expect(s.log.at(-1)?.text).toMatch(/per cent of target/)
   })
 })
