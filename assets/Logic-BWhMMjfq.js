@@ -1,0 +1,1 @@
+import{j as o}from"./ui-Cusq77EJ.js";import{Q as r}from"./QuizRound-CvltauHS.js";import{l as t}from"./index-rNeoQpN2.js";import"./react-SojlxpzI.js";import"./Explanation-DGbMgNwe.js";import"./x-BuHFBG6I.js";import"./motion-RccCmU5N.js";import"./ResultShell-D1G6beCZ.js";function c(){return o.jsx(r,{trackId:"logic",items:t,perQuestion:30})}export{c as default};
