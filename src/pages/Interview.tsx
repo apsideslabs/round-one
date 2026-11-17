@@ -5,7 +5,8 @@ import { Person, Bubble, Defs, type Mood } from '@/components/comic/Faces'
 import { drawQuestions, followFor, type Opt, type Panel, type Q, type Follow } from '@/data/scene'
 import { saveCV, loadCV } from '@/lib/cv'
 import { parseCV } from '@/lib/cvintel'
-import { buildPersonalQuestions } from '@/data/personal'
+import { buildPersonalQuestions, buildIntakeQuestions, type Intake } from '@/data/personal'
+import { scoreAnswer, followUpFor, type AnswerScore } from '@/lib/answerScore'
 
 const JUDGES = [
   { name: 'P·ONE', role: 'technical', colour: '#2f5bff' },
@@ -22,12 +23,20 @@ export default function Interview() {
   const [showCV, setShowCV] = useState(() => loadCV().trim().length === 0)
   const intel = useMemo(() => parseCV(cvText), [cvText])
   const personal = useMemo(() => buildPersonalQuestions(intel), [intel])
+  const [mode, setMode] = useState<'cv' | 'intake'>('cv')
+  const [intake, setIntake] = useState<Intake>({ role: 'SDE', year: '4th year', skills: [], internship: false, cgpa: 'mid' })
+  const intakeQs = useMemo(() => buildIntakeQuestions(intake), [intake])
   const questions = useMemo(() => {
-    if (intel.empty) return drawQuestions()
-    // a real interview opens on your CV, then moves to the standard bank
-    const base = drawQuestions().slice(0, Math.max(4, 12 - personal.length))
-    return [...personal, ...base]
-  }, [seed, intel, personal])
+    const built = !intel.empty ? personal : intake.skills.length ? intakeQs : []
+    const base = drawQuestions().slice(0, Math.max(4, 12 - built.length))
+    return [...built, ...base]
+  }, [seed, intel, personal, intake, intakeQs])
+
+  const [typed, setTyped] = useState('')
+  const [typedOpen, setTypedOpen] = useState(false)
+  const [rubric, setRubric] = useState<AnswerScore | null>(null)
+  const [followText, setFollowText] = useState('')
+  const [followRubric, setFollowRubric] = useState<AnswerScore | null>(null)
   const [idx, setIdx] = useState(0)
   const [scores, setScores] = useState<Panel>([0, 0, 0])
   const [phase, setPhase] = useState<'ask' | 'follow' | 'debrief' | 'final'>('ask')
@@ -38,11 +47,11 @@ export default function Interview() {
   const q = questions[idx]
 
   useEffect(() => {
-    if (phase !== 'ask') return
+    if (phase !== 'ask' || typedOpen) return
     setLeft(PER_Q)
     const id = window.setInterval(() => setLeft((t) => Math.max(0, t - 1)), 1000)
     return () => window.clearInterval(id)
-  }, [phase, idx])
+  }, [phase, idx, typedOpen])
 
   const answer = (opt: Opt | null) => {
     setScores((s) => [s[0] + (opt?.fx[0] ?? -2), s[1] + (opt?.fx[1] ?? -2), s[2] + (opt?.fx[2] ?? -2)])
@@ -77,7 +86,30 @@ export default function Interview() {
     setPhase('ask')
   }
 
-  const restart = () => { setSeed((s) => s + 1); setIdx(0); setScores([0, 0, 0]); setLog([]); setLast(null); setPhase('ask') }
+  const restart = () => {
+    setSeed((s) => s + 1); setIdx(0); setScores([0, 0, 0]); setLog([]); setLast(null); setPhase('ask')
+    setTyped(''); setTypedOpen(false); setRubric(null); setFollowText(''); setFollowRubric(null)
+  }
+
+  /** a typed answer, scored by rubric rather than chosen from four options */
+  const submitTyped = () => {
+    if (typed.trim().length < 8) return
+    const ctx = { skill: intel.skills[0] ?? intake.skills[0], project: intel.projects[0] }
+    const r = scoreAnswer(typed, ctx)
+    setRubric(r)
+    const pts = r.score
+    setScores((sc) => [sc[0] + pts * 1.4, sc[1] + pts, sc[2] + pts])
+    setLast({ q, opt: null })
+    setLog((l) => [...l, { q, opt: null }])
+    setPhase('debrief')
+  }
+
+  const submitFollow = () => {
+    if (followText.trim().length < 6) return
+    const r = scoreAnswer(followText, { skill: intel.skills[0] ?? intake.skills[0], project: intel.projects[0] })
+    setFollowRubric(r)
+    setScores((sc) => [sc[0] + r.score, sc[1] + r.score * 0.8, sc[2] + r.score * 0.8])
+  }
 
   const verdicts = scores.map(verdictFor)
   const selects = verdicts.filter((v) => v === 'select').length
@@ -121,6 +153,67 @@ export default function Interview() {
           </button>
           {showCV && (
             <div className="border-t-2 border-ink/15 p-2.5">
+              <div className="mb-2 flex gap-1.5">
+                {(['cv', 'intake'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => setMode(m)}
+                    className={`rounded-lg border-2 border-ink px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider ${mode === m ? 'bg-ink text-paper' : 'bg-card'}`}>
+                    {m === 'cv' ? 'i have a cv' : 'no cv — quick profile'}
+                  </button>
+                ))}
+              </div>
+
+              {mode === 'intake' && (
+                <div className="grid gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {(['SDE', 'Data', 'Testing', 'Support'] as const).map((r) => (
+                      <button key={r} type="button" onClick={() => setIntake({ ...intake, role: r })}
+                        className={`rounded-lg border-2 border-ink px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${intake.role === r ? 'bg-c2' : 'bg-card'}`}>
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['2nd year', '3rd year', '4th year', 'graduate'].map((y) => (
+                      <button key={y} type="button" onClick={() => setIntake({ ...intake, year: y })}
+                        className={`rounded-lg border-2 border-ink px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${intake.year === y ? 'bg-c3' : 'bg-card'}`}>
+                        {y}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {['Python', 'Java', 'JavaScript', 'React', 'SQL', 'Node', 'Docker', 'ML', 'Flutter', 'Excel'].map((sk) => {
+                      const on = intake.skills.includes(sk)
+                      return (
+                        <button key={sk} type="button"
+                          onClick={() => setIntake({ ...intake, skills: on ? intake.skills.filter((x) => x !== sk) : [...intake.skills, sk] })}
+                          className={`rounded border-2 border-ink px-1.5 py-0.5 font-mono text-[9px] font-bold ${on ? 'bg-c1 text-white' : 'bg-[#f4f2ea]'}`}>
+                          {sk}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button type="button" onClick={() => setIntake({ ...intake, internship: !intake.internship })}
+                      className={`rounded-lg border-2 border-ink px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${intake.internship ? 'bg-c2' : 'bg-card'}`}>
+                      internship: {intake.internship ? 'yes' : 'no'}
+                    </button>
+                    {(['high', 'mid', 'low'] as const).map((c) => (
+                      <button key={c} type="button" onClick={() => setIntake({ ...intake, cgpa: c })}
+                        className={`rounded-lg border-2 border-ink px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${intake.cgpa === c ? 'bg-c3' : 'bg-card'}`}>
+                        cgpa {c}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button"
+                    onClick={() => { setShowCV(false); setSeed((x) => x + 1); setIdx(0); setPhase('ask'); setLog([]); setScores([0, 0, 0]) }}
+                    className="w-fit rounded-lg border-2 border-ink bg-c2 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wider shadow-[2px_2px_0_var(--color-ink)]">
+                    build from this
+                  </button>
+                </div>
+              )}
+
+              {mode === 'cv' && (
+              <div>
               <textarea
                 value={cvText}
                 onChange={(e) => setCvText(e.target.value)}
@@ -138,7 +231,9 @@ export default function Interview() {
                   {intel.metrics.length ? ` · ${intel.metrics.length} numbers` : ' · no numbers'}
                 </span>
               </div>
-              {!intel.empty && (
+              </div>
+              )}
+              {!intel.empty && mode === 'cv' && (
                 <div className="mt-2 grid gap-1.5 rounded-lg border-2 border-ink/20 bg-paper p-2">
                   <p className="mono-label">what i read</p>
                   <div className="flex flex-wrap gap-1">
@@ -242,7 +337,7 @@ export default function Interview() {
             <rect width="800" height="450" fill="url(#vignette)" pointerEvents="none" />
           </svg>
 
-          {phase === 'ask' && (
+          {phase === 'ask' && !typedOpen && (
             <div className="absolute right-4 top-11 flex items-center gap-1.5 rounded-full border-2 border-ink bg-[#fffcf5] px-2.5 py-1">
               <Clock className="h-3 w-3" />
               <span className={`font-mono text-[11px] font-bold tabular-nums ${left <= 10 ? 'text-bad' : ''}`}>{left}s</span>
@@ -276,7 +371,7 @@ export default function Interview() {
             <div>
               <p className="mono-label mb-1">what they heard</p>
               <p className="text-[13px] font-medium leading-relaxed text-ink-2">
-                {last.opt ? last.opt.heard : 'nothing — the clock ran out'}
+                {last.opt ? last.opt.heard : rubric ? 'you answered it in your own words — see the rubric below' : 'nothing — the clock ran out'}
               </p>
               {last.fopt && (
                 <p className="mt-1 text-[12px] font-medium leading-relaxed text-ink-2">
@@ -299,6 +394,41 @@ export default function Interview() {
               </p>
               <p className="mt-1.5 text-[11.5px] font-medium leading-relaxed text-ink-3">{(last.follow ?? last.q).why}</p>
             </div>
+            {rubric && (
+              <div className="sm:col-span-2 rounded-lg border-2 border-ink bg-[#f7f5ee] p-2.5">
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="mono-label">how they scored what you said</span>
+                  <span className="rounded border-2 border-ink bg-card px-1.5 font-mono text-[10px] font-bold">{rubric.score.toFixed(1)} / 5</span>
+                </div>
+                <ul className="mb-2 grid gap-0.5">
+                  {rubric.notes.length ? rubric.notes.map((n) => (
+                    <li key={n} className="flex items-start gap-1.5 text-[11.5px] font-medium text-ink-2">
+                      <X className="mt-0.5 h-3 w-3 shrink-0 text-bad" /> {n}
+                    </li>
+                  )) : (
+                    <li className="flex items-center gap-1.5 text-[11.5px] font-medium text-ink-2">
+                      <Check className="h-3 w-3 text-ok" /> nothing missing — number, ownership, result and specifics all present
+                    </li>
+                  )}
+                </ul>
+                {!followRubric ? (
+                  <div className="rounded-lg border-2 border-ink bg-c3-soft p-2">
+                    <p className="mb-1 text-[12px] font-extrabold">{followUpFor(rubric.missing, { skill: intel.skills[0] ?? intake.skills[0] }).ask}</p>
+                    <p className="mb-1.5 text-[11px] font-medium text-ink-3">{followUpFor(rubric.missing, { skill: intel.skills[0] ?? intake.skills[0] }).hint}</p>
+                    <textarea value={followText} onChange={(e) => setFollowText(e.target.value)}
+                      className="h-16 w-full resize-none rounded-lg border-2 border-ink bg-paper px-2 py-1.5 text-[12px] font-medium outline-none"
+                      placeholder="answer the follow-up" />
+                    <button type="button" onClick={submitFollow} className="mt-1.5 rounded-lg border-2 border-ink bg-card px-2.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider">
+                      answer it
+                    </button>
+                  </div>
+                ) : (
+                  <p className="rounded-lg border-2 border-ink bg-c2-soft px-2 py-1.5 text-[11.5px] font-medium">
+                    follow-up scored {followRubric.score.toFixed(1)} / 5 — {followRubric.notes[0] ?? 'that closed the gap'}
+                  </p>
+                )}
+              </div>
+            )}
             <div className="sm:col-span-2 flex justify-end">
               <button type="button" onClick={next} className="inline-flex items-center gap-1.5 rounded-lg border-2 border-ink bg-c1 px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-[2px_2px_0_var(--color-ink)]">
                 {idx + 1 >= questions.length ? 'Go to calibration' : 'Next question'} <ChevronRight className="h-3.5 w-3.5" />
@@ -324,7 +454,27 @@ export default function Interview() {
         )}
 
         {phase === 'ask' && (
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="mt-3">
+            <button type="button" onClick={() => setTypedOpen((v) => !v)} className="mb-2 font-mono text-[9px] font-bold uppercase tracking-wider text-ink-3 underline underline-offset-4">
+              {typedOpen ? 'pick from options instead' : 'or answer in your own words →'}
+            </button>
+            {typedOpen ? (
+              <div className="rounded-xl border-2 border-ink bg-card p-2.5 shadow-[3px_3px_0_var(--color-ink)]">
+                <textarea
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  placeholder="Speak it the way you would in the room. They will score what is missing."
+                  className="h-24 w-full resize-none rounded-lg border-2 border-ink bg-paper px-2.5 py-2 text-[12.5px] font-medium outline-none"
+                />
+                <div className="mt-1.5 flex items-center gap-2">
+                  <button type="button" onClick={submitTyped} className="rounded-lg border-2 border-ink bg-c2 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wider shadow-[2px_2px_0_var(--color-ink)]">
+                    say it
+                  </button>
+                  <span className="text-[11px] font-medium text-ink-3">{typed.trim().split(/\s+/).filter(Boolean).length} words · 30–60 is the window</span>
+                </div>
+              </div>
+            ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
             {q.opts.map((o) => (
               <button key={o.label} type="button" onClick={() => answer(o)}
                 className="group flex items-center justify-between gap-2 rounded-xl border-2 border-ink bg-card px-3.5 py-2.5 text-left text-[13px] font-bold leading-snug shadow-[3px_3px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none">
@@ -332,6 +482,8 @@ export default function Interview() {
                 <ChevronRight className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5" />
               </button>
             ))}
+          </div>
+            )}
           </div>
         )}
 

@@ -161,3 +161,115 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
 
   return out
 }
+
+export interface Intake {
+  role: 'SDE' | 'Data' | 'Testing' | 'Support'
+  year: string
+  skills: string[]
+  internship: boolean
+  cgpa: 'high' | 'mid' | 'low'
+}
+
+/** For candidates with no CV yet — the common case in second and third year. */
+export function buildIntakeQuestions(i: Intake): Q[] {
+  const out: Q[] = []
+  const skill = i.skills[0] ?? 'Python'
+  const skill2 = i.skills[1] ?? 'SQL'
+
+  out.push({
+    id: 'in-role', round: 'Your CV', scene: 'panel',
+    ask: i.role === 'SDE'
+      ? 'For a developer role — what have you built end to end, alone?'
+      : i.role === 'Data'
+        ? 'For a data role — what is the largest dataset you have actually cleaned?'
+        : i.role === 'Testing'
+          ? 'For a testing role — what is the nastiest bug you have caught?'
+          : 'For a support role — describe a problem you solved for someone else.',
+    moods: ['neutral', 'neutral', 'sceptical'],
+    opts: [
+      { label: '“College assignments, mostly.”', fx: [-1, -1, -1], grade: 'weak', heard: 'nothing beyond coursework' },
+      { label: 'One thing, from first line to someone using it', fx: [2, 2, 2], grade: 'strong', heard: 'end-to-end ownership' },
+      { label: '“I have done many small things.”', fx: [0, 0, -1], grade: 'weak', heard: 'breadth with no depth' },
+      { label: 'A team project where you name your exact part', fx: [1, 2, 1], grade: 'ok', heard: 'ownership inside a team' }
+    ],
+    model: i.role === 'SDE'
+      ? `“A timetable tool for my department — I wrote every line of ${skill}, deployed it, and handled the bugs that came in from 300 students.”`
+      : i.role === 'Data'
+        ? '“A 4,000-row lab dataset — messy dates, duplicate IDs. I cleaned it in pandas and the analysis finally stopped contradicting itself.”'
+        : i.role === 'Testing'
+          ? '“A payment form that accepted ₹0 because the validation ran after the submit. I found it by trying empty and negative amounts.”'
+          : '“A faculty member could not export marks. Turned out to be a date-format mismatch — I fixed it and wrote it up so it would not recur.”',
+    why: 'With no CV they are checking whether anything you have done went all the way to a real user. One finished thing beats ten started ones.'
+  })
+
+  out.push({
+    id: 'in-skill', round: 'Your CV', scene: 'board',
+    ask: `You picked ${skill}. What can you do with it today, without looking it up?`,
+    moods: ['neutral', 'smile', 'neutral'],
+    opts: [
+      { label: '“The basics — syntax, loops.”', fx: [-1, 0, -1], grade: 'weak', heard: 'tutorial level' },
+      { label: 'Name something you built with it and what it does', fx: [2, 2, 2], grade: 'strong', heard: 'working knowledge' },
+      { label: '“I have watched a full course on it.”', fx: [-2, 0, -1], grade: 'weak', heard: 'consumption, not practice' },
+      { label: 'Admit the limit, and say what you would build next', fx: [1, 2, 1], grade: 'ok', heard: 'honest self-assessment' }
+    ],
+    model: `“With ${skill} I can write a small service and debug it — my last one read a CSV and served it as an API. What I cannot do yet is performance tuning.”`,
+    why: 'They are calibrating, not testing. Naming the edge of your knowledge is more convincing than claiming the whole.'
+  })
+
+  if (i.year === '2nd year' || i.year === '3rd year') {
+    out.push({
+      id: 'in-early', round: 'Your CV', scene: 'wide',
+      ask: `You still have ${i.year === '2nd year' ? 'two years' : 'a year'}. What are you doing about the gap?`,
+      moods: ['neutral', 'neutral', 'sceptical'],
+      opts: [
+        { label: '“I will prepare in the final year.”', fx: [-2, -1, -1], grade: 'weak', heard: 'no plan, no start' },
+        { label: 'Something already running, with a date attached', fx: [2, 2, 2], grade: 'strong', heard: 'you have started, not planned' },
+        { label: '“I am watching tutorials.”', fx: [-1, 0, -1], grade: 'weak', heard: 'passive' },
+        { label: 'Name the thing you are building and who for', fx: [1, 2, 2], grade: 'strong', heard: 'a project in progress' }
+      ],
+      model: `“I have started a small ${skill2} project and I give it four hours a week — it has to be usable by March. Planning later is what everyone does.”`,
+      why: 'They are asking for evidence of momentum. Anything already running beats any plan.'
+    })
+  }
+
+  out.push({
+    id: 'in-exp', round: 'Your CV', scene: 'panel',
+    ask: i.internship ? 'What did you own in that internship?' : 'No internship yet. What have you done with the time instead?',
+    moods: ['neutral', 'neutral', 'sceptical'],
+    opts: i.internship
+      ? [
+          { label: '“I observed the process.”', fx: [-1, -1, -1], grade: 'weak', heard: 'spectator' },
+          { label: 'The piece that would have broken without you', fx: [2, 2, 2], grade: 'strong', heard: 'real ownership' },
+          { label: '“I did what was assigned.”', fx: [-2, 0, -1], grade: 'weak', heard: 'execution only' },
+          { label: 'The team, the stack, and your module', fx: [1, 1, 2], grade: 'strong', heard: 'context plus ownership' }
+        ]
+      : [
+          { label: '“Nothing, I was busy with college.”', fx: [-2, -1, -1], grade: 'weak', heard: 'no initiative' },
+          { label: 'One self-started thing with a real user', fx: [2, 2, 2], grade: 'strong', heard: 'self-directed work' },
+          { label: '“I am waiting for the placement season.”', fx: [-2, -1, -2], grade: 'weak', heard: 'passive' },
+          { label: 'Open source, a club tool, or freelance work', fx: [1, 2, 2], grade: 'strong', heard: 'real work without a badge' }
+        ],
+    model: i.internship
+      ? '“The nightly report job — mine end to end. When it broke, someone had to redo it by hand, so I had a real customer.”'
+      : '“A tool for my department — 300 students use it. No company name, but real users and real complaints.”',
+    why: 'Output, not a title. No internship is fine; no output is not.'
+  })
+
+  if (i.cgpa === 'low') {
+    out.push({
+      id: 'in-cgpa', round: 'Your CV', scene: 'wide',
+      ask: 'Your marks are on the lower side. Why should we look past them?',
+      moods: ['neutral', 'neutral', 'sceptical'],
+      opts: [
+        { label: '“The college marks strictly.”', fx: [-2, -1, -1], grade: 'weak', heard: 'blame' },
+        { label: 'Own the reason, show the trend, redirect to work', fx: [2, 2, 2], grade: 'strong', heard: 'accountability' },
+        { label: '“Marks do not matter here.”', fx: [-2, -1, -2], grade: 'weak', heard: 'dismissive' },
+        { label: '“I improved in the last two semesters.”', fx: [1, 1, 1], grade: 'ok', heard: 'a trend, if shown' }
+      ],
+      model: '“Second year pulled it down — I was in three clubs. I cut to one, and my last two semesters are 8.1. I would rather be judged on the project work.”',
+      why: 'Never argue with the number. Explain it, show the trend, redirect to evidence.'
+    })
+  }
+
+  return out
+}
