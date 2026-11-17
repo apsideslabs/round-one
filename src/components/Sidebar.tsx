@@ -66,6 +66,12 @@ export function Sidebar() {
         </ul>
 
 
+        <NavLink to="/interview" className={({ isActive }) => cn(item, 'mt-1 border-2 border-ink bg-ink text-paper hover:bg-ink hover:text-paper', isActive && 'bg-ink text-paper')}>
+          <Sparkles className="h-4 w-4 shrink-0 text-c3" />
+          <span className="min-w-0 flex-1 truncate">The interview · scene</span>
+          <span className="font-mono text-[9px] font-bold text-white/50">new</span>
+        </NavLink>
+
         <NavLink to="/lab" className={({ isActive }) => cn(item, 'mt-1 border-2 border-dashed border-ink/40', isActive && active)}>
           <FlaskConical className="h-4 w-4 shrink-0" />
           <span className="min-w-0 flex-1 truncate">Workspace</span>

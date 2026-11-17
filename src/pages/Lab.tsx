@@ -4,7 +4,6 @@ import { Optics } from '@/lab/Optics'
 import { SetLogic } from '@/lab/SetLogic'
 import { SortingRace } from '@/lab/SortingRace'
 import { OfferDesk } from '@/lab/OfferDesk'
-import { Comic } from '@/lab/Comic'
 import { Pathfind } from '@/lab/Pathfind'
 import { MatrixLab } from '@/lab/MatrixLab'
 import { Bayes } from '@/lab/Bayes'
@@ -26,12 +25,6 @@ interface Stage {
 }
 
 const STAGES: Stage[] = [
-  {
-    id: 'comic',
-    name: 'The interview',
-    objective: 'A panel you can talk your way out of — or into the ground. Pick a line; watch their faces.',
-    render: () => <Comic />
-  },
   {
     id: 'optics',
     name: 'Optics bench',

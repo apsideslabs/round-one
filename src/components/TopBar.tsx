@@ -17,6 +17,7 @@ function titleFor(pathname: string): { title: string; sub: string } {
   if (pathname === '/menu') return { title: 'Menu', sub: 'Everything' }
   if (pathname === '/mock') return { title: 'Full mock test', sub: '20 questions · 20 minutes' }
   if (pathname === '/lab') return { title: 'Workspace', sub: 'Blank stage' }
+  if (pathname === '/interview') return { title: 'The interview', sub: 'Illustrated scene' }
   if (pathname === '/arcade') return { title: 'Arcade', sub: `${games.length} games` }
   if (pathname === '/guides') return { title: 'Guides', sub: `${guides.length} guides` }
   if (pathname === '/') return { title: 'Home', sub: 'Overview' }
