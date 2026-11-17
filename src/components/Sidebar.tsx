@@ -72,6 +72,12 @@ export function Sidebar() {
           <span className="font-mono text-[9px] font-bold text-white/50">new</span>
         </NavLink>
 
+        <NavLink to="/gd" className={({ isActive }) => cn(item, 'mt-1 border-2 border-ink bg-card', isActive && active)}>
+          <Users className="h-4 w-4 shrink-0 text-c2" />
+          <span className="min-w-0 flex-1 truncate">Group discussion</span>
+          <span className="font-mono text-[9px] font-bold text-ink-3">new</span>
+        </NavLink>
+
         <NavLink to="/lab" className={({ isActive }) => cn(item, 'mt-1 border-2 border-dashed border-ink/40', isActive && active)}>
           <FlaskConical className="h-4 w-4 shrink-0" />
           <span className="min-w-0 flex-1 truncate">Workspace</span>

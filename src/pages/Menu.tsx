@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpen, RotateCcw, Search, Sparkles, Volume2, VolumeX, ChevronRight } from 'lucide-react'
+import { ArrowRight, BookOpen, RotateCcw, Search, Sparkles, Users, Volume2, VolumeX, ChevronRight } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -118,6 +118,18 @@ export default function Menu() {
           <span className="grid min-w-0 flex-1 gap-0.5">
             <span className="text-[14px] font-extrabold">The interview · illustrated scene</span>
             <span className="mono-label text-white/60">10 questions · three scorecards · model answers</span>
+          </span>
+        </Link>
+        <Link
+          to="/gd"
+          className="mb-2 flex max-w-[620px] items-center gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-3 shadow-[3px_3px_0_var(--color-ink)]"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink bg-c2">
+            <Users className="h-4 w-4 text-white" />
+          </span>
+          <span className="grid min-w-0 flex-1 gap-0.5">
+            <span className="text-[14px] font-extrabold">Group discussion · illustrated scene</span>
+            <span className="mono-label">eight at a table · scored on five parameters</span>
           </span>
         </Link>
         <Link

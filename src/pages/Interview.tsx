@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RotateCcw, ChevronRight, Clock, Check, X } from 'lucide-react'
 import { Person, Bubble, Defs, type Mood } from '@/components/comic/Faces'
-import { drawQuestions, type Opt, type Panel, type Q } from '@/data/scene'
+import { drawQuestions, cvQuestions, followFor, type Opt, type Panel, type Q, type Follow } from '@/data/scene'
+import { readCV, saveCV, loadCV, type Profile } from '@/lib/cv'
 
 const JUDGES = [
   { name: 'P·ONE', role: 'technical', colour: '#2f5bff' },
@@ -15,12 +16,18 @@ const PER_Q = 45
 
 export default function Interview() {
   const [seed, setSeed] = useState(0)
-  const questions = useMemo(() => drawQuestions(), [seed])
+  const [cvText, setCvText] = useState(() => loadCV())
+  const [showCV, setShowCV] = useState(() => loadCV().trim().length === 0)
+  const profile: Profile = useMemo(() => readCV(cvText), [cvText])
+  const questions = useMemo(() => {
+    const base = drawQuestions().slice(0, 8)
+    return profile.empty ? drawQuestions() : [...base, ...cvQuestions(profile)]
+  }, [seed, profile])
   const [idx, setIdx] = useState(0)
   const [scores, setScores] = useState<Panel>([0, 0, 0])
-  const [phase, setPhase] = useState<'ask' | 'debrief' | 'final'>('ask')
-  const [last, setLast] = useState<{ q: Q; opt: Opt | null } | null>(null)
-  const [log, setLog] = useState<Array<{ q: Q; opt: Opt | null }>>([])
+  const [phase, setPhase] = useState<'ask' | 'follow' | 'debrief' | 'final'>('ask')
+  const [last, setLast] = useState<{ q: Q; opt: Opt | null; follow?: Follow; fopt?: Opt | null } | null>(null)
+  const [log, setLog] = useState<Array<{ q: Q; opt: Opt | null; follow?: Follow; fopt?: Opt | null }>>([])
   const [left, setLeft] = useState(PER_Q)
 
   const q = questions[idx]
@@ -34,8 +41,24 @@ export default function Interview() {
 
   const answer = (opt: Opt | null) => {
     setScores((s) => [s[0] + (opt?.fx[0] ?? -2), s[1] + (opt?.fx[1] ?? -2), s[2] + (opt?.fx[2] ?? -2)])
+    const follow = followFor(q.id, opt)
+    if (follow) {
+      setLast({ q, opt, follow })
+      setPhase('follow')
+      return
+    }
     setLast({ q, opt })
     setLog((l) => [...l, { q, opt }])
+    setPhase('debrief')
+  }
+
+  const answerFollow = (fopt: Opt | null) => {
+    setScores((s) => [s[0] + (fopt?.fx[0] ?? -2), s[1] + (fopt?.fx[1] ?? -2), s[2] + (fopt?.fx[2] ?? -2)])
+    setLast((prev) => {
+      const next = prev ? { ...prev, fopt } : { q, opt: null, fopt }
+      setLog((l) => [...l, next])
+      return next
+    })
     setPhase('debrief')
   }
 
@@ -83,6 +106,35 @@ export default function Interview() {
           </div>
         </div>
 
+        <div className="mb-2 rounded-xl border-2 border-ink bg-card shadow-[3px_3px_0_var(--color-ink)]">
+          <button type="button" onClick={() => setShowCV((v) => !v)} className="flex w-full items-center gap-2 px-3 py-2 text-left">
+            <span className="mono-label">your cv</span>
+            <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-ink-3">
+              {profile.empty ? 'paste it — the questions will adapt to your skills' : `${profile.skills.slice(0, 4).join(' · ') || 'read'}${profile.hasInternship ? ' · internship' : ' · no internship'}`}
+            </span>
+            <ChevronRight className={`h-3.5 w-3.5 shrink-0 transition-transform ${showCV ? 'rotate-90' : ''}`} />
+          </button>
+          {showCV && (
+            <div className="border-t-2 border-ink/15 p-2.5">
+              <textarea
+                value={cvText}
+                onChange={(e) => setCvText(e.target.value)}
+                placeholder="Paste your resume text here. Nothing leaves this browser."
+                className="h-24 w-full resize-none rounded-lg border-2 border-ink bg-paper px-2.5 py-2 text-[12px] font-medium outline-none"
+              />
+              <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => { saveCV(cvText); setShowCV(false); setSeed((s) => s + 1); setIdx(0); setPhase('ask'); setLog([]); setScores([0, 0, 0]) }}
+                  className="rounded-lg border-2 border-ink bg-c2 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wider shadow-[2px_2px_0_var(--color-ink)]">
+                  adapt the questions
+                </button>
+                <span className="text-[11px] font-medium text-ink-3">
+                  {profile.skills.length ? `found ${profile.skills.length} skills` : 'no skills recognised yet'}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="comic-panel relative overflow-hidden rounded-2xl border-[3px] border-ink bg-[#fffcf5] shadow-[7px_7px_0_var(--color-ink)]">
           <svg viewBox="0 0 800 450" className="block w-full">
             <Defs />
@@ -99,18 +151,18 @@ export default function Interview() {
 
             {scene === 'board' && (
               <g>
-                <rect x="180" y="42" width="440" height="200" fill="#fbfbf6" stroke="#12151a" strokeWidth="4" />
+                <rect x="36" y="34" width="360" height="188" fill="#fbfbf6" stroke="#12151a" strokeWidth="4" />
                 <g stroke="#2f5bff" strokeWidth="3" fill="none">
-                  <rect x="222" y="76" width="88" height="46" rx="4" />
-                  <rect x="352" y="76" width="88" height="46" rx="4" />
-                  <rect x="482" y="76" width="88" height="46" rx="4" />
-                  <path d="M 310 99 h 42 M 440 99 h 42" />
+                  <rect x="66" y="62" width="74" height="38" rx="4" />
+                  <rect x="176" y="62" width="74" height="38" rx="4" />
+                  <rect x="286" y="62" width="74" height="38" rx="4" />
+                  <path d="M 140 81 h 36 M 250 81 h 36" />
                 </g>
                 <g stroke="#be123c" strokeWidth="2.5" fill="none">
-                  <path d="M 222 168 h 348" strokeDasharray="6 5" />
-                  {[270, 356, 442].map((cx) => <circle key={cx} cx={cx} cy="168" r="9" />)}
+                  <path d="M 66 140 h 294" strokeDasharray="6 5" />
+                  {[96, 176, 256].map((cx) => <circle key={cx} cx={cx} cy="140" r="8" />)}
                 </g>
-                <text x="222" y="200" fontSize="11" fontFamily="JetBrains Mono, monospace" fill="#12151a" opacity="0.6">buckets · collisions</text>
+                <text x="66" y="172" fontSize="11" fontFamily="JetBrains Mono, monospace" fill="#12151a" opacity="0.6">buckets · collisions</text>
               </g>
             )}
 
@@ -130,10 +182,10 @@ export default function Interview() {
 
             {scene !== 'you' ? (
               <>
-                <Person x={392} y={scene === 'panel' ? 118 : 128} scale={scene === 'panel' ? 0.96 : 0.86} skin="#f0c9a4" skinShade="#e0b189" hair="#2b2b2b" shirt="#2f5bff" mood={(q?.moods[0] ?? 'neutral') as Mood} hairStyle="short" glasses lookX={-2} />
-                <Person x={502} y={scene === 'panel' ? 110 : 120} scale={scene === 'panel' ? 1.02 : 0.92} skin="#d9a273" skinShade="#c78e5f" hair="#12151a" shirt="#be123c" mood={(q?.moods[1] ?? 'neutral') as Mood} hairStyle="bun" lookX={-2} />
-                <Person x={614} y={scene === 'panel' ? 118 : 128} scale={scene === 'panel' ? 0.96 : 0.86} skin="#c98d5c" skinShade="#b47a4b" hair="#3d2b1f" shirt="#0e8c6a" mood={(q?.moods[2] ?? 'neutral') as Mood} hairStyle="bald" beard lookX={-2} />
-                {[392, 502, 614].map((cx, i) => (
+                <Person x={scene === 'board' ? 500 : 392} y={scene === 'panel' ? 118 : 128} scale={scene === 'panel' ? 0.96 : scene === 'board' ? 0.8 : 0.86} skin="#f0c9a4" skinShade="#e0b189" hair="#2b2b2b" shirt="#2f5bff" mood={(q?.moods[0] ?? 'neutral') as Mood} hairStyle="short" glasses lookX={-2} />
+                <Person x={scene === 'board' ? 600 : 502} y={scene === 'panel' ? 110 : 120} scale={scene === 'panel' ? 1.02 : scene === 'board' ? 0.84 : 0.92} skin="#d9a273" skinShade="#c78e5f" hair="#12151a" shirt="#be123c" mood={(q?.moods[1] ?? 'neutral') as Mood} hairStyle="bun" lookX={-2} />
+                <Person x={scene === 'board' ? 700 : 614} y={scene === 'panel' ? 118 : 128} scale={scene === 'panel' ? 0.96 : scene === 'board' ? 0.8 : 0.86} skin="#c98d5c" skinShade="#b47a4b" hair="#3d2b1f" shirt="#0e8c6a" mood={(q?.moods[2] ?? 'neutral') as Mood} hairStyle="bald" beard lookX={-2} />
+                {(scene === 'board' ? [500, 600, 700] : [392, 502, 614]).map((cx, i) => (
                   <g key={cx}>
                     <rect x={cx - 34} y="304" width="68" height="14" rx="2" fill="#12151a" opacity="0.85" />
                     <text x={cx} y="314" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#fffcf5" fontFamily="JetBrains Mono, monospace">{JUDGES[i].name}</text>
@@ -151,7 +203,7 @@ export default function Interview() {
               </>
             )}
 
-            {q?.ask && phase !== 'final' && <Bubble x={502} y={22} text={q.ask} />}
+            {q?.ask && phase !== 'final' && <Bubble x={scene === 'board' ? 600 : 502} y={22} text={phase === 'follow' && last?.follow ? last.follow.ask : q.ask} />}
             {phase === 'final' && <Bubble x={502} y={22} text="We will let you know." />}
 
             <g>
@@ -200,9 +252,14 @@ export default function Interview() {
               <p className="text-[13px] font-medium leading-relaxed text-ink-2">
                 {last.opt ? last.opt.heard : 'nothing — the clock ran out'}
               </p>
+              {last.fopt && (
+                <p className="mt-1 text-[12px] font-medium leading-relaxed text-ink-2">
+                  Then, on the follow-up: <span className="font-bold">{last.fopt.heard}</span>
+                </p>
+              )}
               <p className="mono-label mb-1 mt-2.5">scorecard</p>
               <div className="flex gap-2">
-                {last.opt?.fx.map((d, i) => (
+                {[...(last.opt?.fx ?? [0, 0, 0])].map((d, i) => (
                   <span key={i} className={`inline-flex items-center gap-1 rounded-md border-2 border-ink px-1.5 py-0.5 font-mono text-[10px] font-bold ${d > 0 ? 'bg-c2-soft' : d < 0 ? 'bg-c1-soft' : 'bg-[#f4f2ea]'}`}>
                     {d > 0 ? <Check className="h-3 w-3" /> : d < 0 ? <X className="h-3 w-3" /> : '·'} {JUDGES[i].name} {d > 0 ? `+${d}` : d}
                   </span>
@@ -211,8 +268,10 @@ export default function Interview() {
             </div>
             <div>
               <p className="mono-label mb-1">what a strong answer sounds like</p>
-              <p className="rounded-lg border-2 border-ink bg-c2-soft px-2.5 py-2 text-[12.5px] font-medium italic leading-relaxed text-ink">{last.q.model}</p>
-              <p className="mt-1.5 text-[11.5px] font-medium leading-relaxed text-ink-3">{last.q.why}</p>
+              <p className="rounded-lg border-2 border-ink bg-c2-soft px-2.5 py-2 text-[12.5px] font-medium italic leading-relaxed text-ink">
+                {(last.follow ?? last.q).model}
+              </p>
+              <p className="mt-1.5 text-[11.5px] font-medium leading-relaxed text-ink-3">{(last.follow ?? last.q).why}</p>
             </div>
             <div className="sm:col-span-2 flex justify-end">
               <button type="button" onClick={next} className="inline-flex items-center gap-1.5 rounded-lg border-2 border-ink bg-c1 px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-[2px_2px_0_var(--color-ink)]">
@@ -223,6 +282,21 @@ export default function Interview() {
         )}
 
         {/* ---------- answers ---------- */}
+        {phase === 'follow' && last?.follow && (
+          <div className="mt-3">
+            <p className="mono-label mb-1.5">they push back — answer again</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {last.follow.opts.map((o) => (
+                <button key={o.label} type="button" onClick={() => answerFollow(o)}
+                  className="group flex items-center justify-between gap-2 rounded-xl border-2 border-ink bg-c3-soft px-3.5 py-2.5 text-left text-[13px] font-bold leading-snug shadow-[3px_3px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none">
+                  <span>{o.label}</span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {phase === 'ask' && (
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {q.opts.map((o) => (

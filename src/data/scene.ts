@@ -265,5 +265,159 @@ export function drawQuestions() {
     const shuffled = [...list].sort(() => Math.random() - 0.5)
     picked.push(...shuffled.slice(0, 2))
   }
+
+  // every interview should push back at least twice: swap in follow-up
+  // questions if the draw happened to leave them out
+  const followable = QUESTIONS.filter((q) => FOLLOWUPS[q.id])
+  let guard = 0
+  while (picked.filter((q) => FOLLOWUPS[q.id]).length < 2 && guard++ < 20) {
+    const candidate = followable.find((q) => !picked.includes(q))
+    if (!candidate) break
+    const victimIndex = picked.findIndex((q) => !FOLLOWUPS[q.id] && q.round !== 'Your CV')
+    if (victimIndex < 0) break
+    picked[victimIndex] = candidate
+  }
   return picked
+}
+
+/** The panellist only pushes back when the first answer earned it. */
+export const followFor = (qId: string, opt: Opt | null): Follow | undefined =>
+  opt && opt.grade !== 'weak' ? FOLLOWUPS[qId] : undefined
+
+/** The second beat: the panellist does not accept the first answer. */
+export interface Follow { ask: string; opts: Opt[]; model: string; why: string }
+
+export const FOLLOWUPS: Record<string, Follow> = {
+  i1: {
+    ask: 'Everyone says that. What did you actually build?',
+    opts: [
+      { label: '“A web app.”', fx: [-2, -1, -1], grade: 'weak', heard: 'a category, not a thing' },
+      { label: 'Name the user, the problem, and the one hard part', fx: [2, 2, 2], grade: 'strong', heard: 'concrete detail under pressure' },
+      { label: '“You can see it on my resume.”', fx: [-1, -1, -2], grade: 'weak', heard: 'deflection' },
+      { label: 'Re-explain the same thing more slowly', fx: [0, -1, -1], grade: 'weak', heard: 'no new information' }
+    ],
+    model: '“A billing tool for a 12-person shop. The hard part was GST rounding — I stored paise as integers because float errors showed up as ₹0.01 mismatches at month end.”',
+    why: 'The follow-up exists to see if the first answer was real. One specific mechanism proves it was.'
+  },
+  t1: {
+    ask: 'Then why does a hash map resize at 0.75 and not at 1.0?',
+    opts: [
+      { label: '“I don’t know, that is just the default.”', fx: [-1, 0, 0], grade: 'ok', heard: 'honest, but shallow' },
+      { label: 'Because collisions rise before the table is full, so lookup degrades first', fx: [2, 2, 2], grade: 'strong', heard: 'you understand the trade-off' },
+      { label: 'Invent a reason about memory', fx: [-2, -2, -1], grade: 'weak', heard: 'a guess dressed as knowledge' },
+      { label: '“It depends on the JVM.”', fx: [-1, -1, -1], grade: 'weak', heard: 'a dodge' }
+    ],
+    model: '“Load factor is a time-space trade-off. Past about 0.75 the collision chains lengthen faster than the extra memory is worth, so it doubles early.”',
+    why: 'They push one layer deeper than the textbook answer. Knowing *why* the constant is 0.75 is the difference.'
+  },
+  b1: {
+    ask: 'And what did that failure cost someone else?',
+    opts: [
+      { label: '“Nothing, it was only my marks.”', fx: [-1, -1, -1], grade: 'weak', heard: 'narrow view of consequence' },
+      { label: 'Name who was affected and what you did about it', fx: [2, 2, 2], grade: 'strong', heard: 'you see beyond yourself' },
+      { label: '“The team was fine with it.”', fx: [-1, 0, -1], grade: 'weak', heard: 'assumed, not checked' },
+      { label: '“I would rather not go into it.”', fx: [-2, -1, -1], grade: 'weak', heard: 'guarded' }
+    ],
+    model: '“My teammate had to redo two days of work because my interface changed without telling her. I now announce interface changes in the group before merging.”',
+    why: 'The second question tests whether "owning it" included the people it touched.'
+  },
+  h1: {
+    ask: 'You could say that about any product company. Why us?',
+    opts: [
+      { label: 'Repeat the same answer louder', fx: [-1, -2, -1], grade: 'weak', heard: 'no real reason' },
+      { label: 'Name something only this company does, and your link to it', fx: [2, 2, 2], grade: 'strong', heard: 'a reason that cannot be reused' },
+      { label: '“Because you came to my campus.”', fx: [-1, -2, -2], grade: 'weak', heard: 'convenience' },
+      { label: '“Honestly, I applied everywhere.”', fx: [-2, -2, -2], grade: 'weak', heard: 'you are not choosing us' }
+    ],
+    model: '“You are the only one on this campus running an in-house payments switch, and I have only ever built against a sandbox. That gap is specific to you.”',
+    why: 'The test is whether the reason survives being said to the company next door.'
+  },
+  p1: {
+    ask: 'What part did you personally write?',
+    opts: [
+      { label: '“We all did everything.”', fx: [-2, -1, -1], grade: 'weak', heard: 'unscoreable' },
+      { label: 'Name your files, your decisions, your bugs', fx: [2, 2, 2], grade: 'strong', heard: 'ownership you can defend' },
+      { label: '“I was the team lead.”', fx: [0, 1, 0], grade: 'ok', heard: 'role, not contribution' },
+      { label: '“Most of the backend.”', fx: [1, 0, 0], grade: 'ok', heard: 'vague but plausible' }
+    ],
+    model: '“The invoice generator and the GST module — about 1,200 lines. I chose Postgres over Mongo for the transaction guarantees, and I wrote the retry idempotency key.”',
+    why: 'They are separating what you did from what your team did. Files, decisions, and bugs are all yours to claim.'
+  }
+}
+
+/** Questions built from the candidate's own CV. */
+export function cvQuestions(p: { skills: string[]; hasInternship: boolean; cgpa: number | null }): Q[] {
+  const out: Q[] = []
+  const skill = p.skills[0] ?? 'Python'
+  const skill2 = p.skills[1] ?? 'SQL'
+
+  out.push({
+    id: 'cv-skill', round: 'Your CV', scene: 'panel',
+    ask: `You list ${skill}. Where did you actually use it?`,
+    moods: ['neutral', 'neutral', 'sceptical'],
+    opts: [
+      { label: '“In a college project and some practice.”', fx: [-1, 0, -1], grade: 'weak', heard: 'a claim with no scene' },
+      { label: 'Name the project, what you built with it, what broke', fx: [2, 2, 2], grade: 'strong', heard: 'evidence behind the keyword' },
+      { label: '“I know the syntax well.”', fx: [-2, 0, -1], grade: 'weak', heard: 'tutorial knowledge' },
+      { label: '“I have used it in three different places.”', fx: [0, 0, 0], grade: 'ok', heard: 'breadth claimed, none shown' }
+    ],
+    model: `“${skill} was the whole backend of my project — I wrote the API and the retry logic. The part that broke was connection pooling under load, which I fixed by capping the pool.”`,
+    why: 'Every keyword on your CV is an invitation to be tested on it. Attach one project and one failure to each.'
+  })
+
+  out.push({
+    id: 'cv-gap', round: 'Your CV', scene: 'board',
+    ask: p.hasInternship
+      ? 'What did you actually ship in that internship?'
+      : 'No internship on this CV. What did you do with the time?',
+    moods: ['neutral', 'smile', 'neutral'],
+    opts: p.hasInternship
+      ? [
+          { label: '“I learnt a lot about the industry.”', fx: [-1, -1, -1], grade: 'weak', heard: 'nothing concrete' },
+          { label: 'The feature you shipped, and who used it', fx: [2, 2, 2], grade: 'strong', heard: 'real output' },
+          { label: '“I mostly observed and helped.”', fx: [-2, 0, -1], grade: 'weak', heard: 'passive' },
+          { label: 'Name the team size and the stack, then the one thing you owned', fx: [1, 1, 2], grade: 'strong', heard: 'context and ownership' }
+        ]
+      : [
+          { label: '“I could not get one.”', fx: [-2, -1, -1], grade: 'weak', heard: 'no plan B' },
+          { label: 'Name what you built instead, and the users it got', fx: [2, 2, 2], grade: 'strong', heard: 'self-directed work' },
+          { label: '“I was focusing on studies.”', fx: [-1, 0, -1], grade: 'weak', heard: 'nothing to show' },
+          { label: 'Point to open-source or freelance work', fx: [1, 2, 2], grade: 'strong', heard: 'real work without a badge' }
+        ],
+    model: p.hasInternship
+      ? '“I owned the refund reconciliation job — 400 lines, ran nightly. It cut manual checks from four hours a week to twenty minutes.”'
+      : '“No internship, so I built a timetable tool my department now uses — about 300 students. It is the same work, without the company name.”',
+    why: 'They are looking for output, not a title. If there is no internship, replace it with proof of self-directed work.'
+  })
+
+  out.push({
+    id: 'cv-depth', round: 'Your CV', scene: 'board',
+    ask: `Say ${skill2} is doing something you did not expect. How do you find out why?`,
+    moods: ['neutral', 'neutral', 'neutral'],
+    opts: [
+      { label: '“Search the error online.”', fx: [0, 0, 0], grade: 'ok', heard: 'a first step, not a method' },
+      { label: 'Reproduce it small, log it, bisect the change', fx: [2, 2, 2], grade: 'strong', heard: 'a debugging discipline' },
+      { label: '“Ask a senior immediately.”', fx: [-1, 0, 0], grade: 'weak', heard: 'no first attempt' },
+      { label: 'Rewrite the module', fx: [-2, -1, -2], grade: 'weak', heard: 'avoidance disguised as action' }
+    ],
+    model: `“Reproduce it in the smallest case, then bisect. With ${skill2} I would log the inputs and outputs around the call before touching the code.”`,
+    why: 'They want to hear method, not vocabulary. Reproduction and bisection are the answer they are listening for.'
+  })
+
+  if (p.cgpa !== null && p.cgpa < 7) {
+    out.push({
+      id: 'cv-cgpa', round: 'Your CV', scene: 'wide',
+      ask: 'Your marks are on the lower side. Why should we overlook that?',
+      moods: ['neutral', 'neutral', 'sceptical'],
+      opts: [
+        { label: '“The marking was strict.”', fx: [-2, -1, -1], grade: 'weak', heard: 'blame' },
+        { label: 'Own the reason, then point at what you did instead', fx: [2, 2, 2], grade: 'strong', heard: 'accountability plus evidence' },
+        { label: '“Marks do not matter in this industry.”', fx: [-2, -1, -2], grade: 'weak', heard: 'dismissive' },
+        { label: '“I improved in the last two semesters.”', fx: [1, 1, 1], grade: 'ok', heard: 'a trend, if shown' }
+      ],
+      model: '“Second year I spread myself across three clubs and my marks slipped. I cut that to one and my last two semesters are 8.1. The project work is what I would rather be judged on.”',
+      why: 'Never argue with the number. Explain it, show the trend, and redirect to evidence.'
+    })
+  }
+  return out
 }
