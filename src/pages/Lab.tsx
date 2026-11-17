@@ -3,6 +3,7 @@ import { Check, Grid2x2, RotateCcw, Sparkles } from 'lucide-react'
 import { Optics } from '@/lab/Optics'
 import { SetLogic } from '@/lab/SetLogic'
 import { SortingRace } from '@/lab/SortingRace'
+import { OfferDesk } from '@/lab/OfferDesk'
 import { Pathfind } from '@/lab/Pathfind'
 import { MatrixLab } from '@/lab/MatrixLab'
 import { Bayes } from '@/lab/Bayes'
@@ -53,6 +54,12 @@ const STAGES: Stage[] = [
     name: 'Fold the net',
     objective: 'Scrub the slider to fold a flat net into a box.',
     render: () => <FoldNet />
+  },
+  {
+    id: 'offer',
+    name: 'Offer desk',
+    objective: 'Two offers. CTC is not salary — find the monthly number that actually lands in the bank.',
+    render: () => <OfferDesk />
   },
   {
     id: 'sorting',
