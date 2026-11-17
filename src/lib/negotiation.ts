@@ -45,10 +45,17 @@ export interface NegState {
   outcome: 'deal' | 'lowball' | 'withdrawn' | 'walked' | null
   log: Line[]
   mood: 'neutral' | 'warm' | 'cold'
+  tell: string
 }
 
 const clamp = (n: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n))
 const r1 = (n: number) => Number(n.toFixed(1))
+
+const OPENINGS: Record<Archetype, string> = {
+  service: 'Right — sorry, I am double-booked today, so. Five point nine lakh CTC. Fixed is about eighty-eight per cent of that. …That is the standard fresher band, I did not make it up.',
+  product: 'Hey. Straight to it — seven point six. Variable is small, eight per cent. What number were you carrying in your head?',
+  consultancy: 'Good afternoon. The grade for this role is G2. The band opens at six point four lakh. — sorry, six point four, and eighteen per cent of that is variable. I will send the annexure.'
+}
 
 export function makeState(id: Archetype = 'service'): NegState {
   const emp = EMPLOYERS[id]
@@ -68,7 +75,8 @@ export function makeState(id: Archetype = 'service'): NegState {
     over: false,
     outcome: null,
     mood: 'neutral',
-    log: [{ who: 'them', text: `We can offer ₹${emp.opening.toFixed(1)} LPA CTC. The fixed part is about ${100 - emp.variablePct}% of that.` }]
+    tell: 'checks the time',
+    log: [{ who: 'them', text: OPENINGS[id] }]
   }
 }
 
@@ -87,13 +95,15 @@ export function play(s: NegState, move: Move): NegState {
       if (st.usedJustify >= 2) {
         st.leverage = clamp(st.leverage - 8); nudgeMood(-1)
         say('you', 'As I mentioned, the published band is higher.')
-        say('them', 'You have said that. Repeating it does not change the band.')
+        say('them', 'You have said that. Twice. — It is not that I disagree, it is that repeating it does not move a grade.')
       } else {
         st.usedJustify++
         st.leverage = clamp(st.leverage + 13); nudgeMood(1)
         raise(st.emp.id === 'product' ? 0.5 : 0.35)
         say('you', 'The band for this role in this city is published — I am asking inside it, not above it.')
-        say('them', st.emp.id === 'product' ? 'Fair. I can move the fixed number.' : 'Let me see what approval I can get for that.')
+        say('them', st.emp.id === 'product'
+          ? 'Yeah — that sheet, I have seen it. Fair. I can move the fixed.'
+          : 'Hm. …Look, the band is public, you are not wrong. I can move the fixed a little. Not the variable.')
       }
       break
     }
@@ -101,21 +111,25 @@ export function play(s: NegState, move: Move): NegState {
       st.leverage = clamp(st.leverage + 7)
       raise(0.25 + st.leverage / 260)
       say('you', 'I was expecting closer to the top of the band for this role.')
-      say('them', 'That is above what we open with. I will see what is possible.')
+      say('them', st.emp.id === 'product'
+        ? 'Bold. — I like it, but no. I can come up slightly.'
+        : 'That is above what we open with. …I will ask. I am not promising anything.')
       break
     }
     case 'competing': {
       if (st.usedCompeting) {
         st.leverage = clamp(st.leverage - 28); nudgeMood(-2)
         say('you', 'I do have another offer.')
-        say('them', 'You mentioned that already. It is starting to sound like a tactic.')
+        say('them', 'You have said that. — I will be blunt: the first time it is information, the second time it is a script.')
         st.offer = r1(Math.max(st.opening, st.offer - 0.2))
       } else {
         st.usedCompeting = true
         st.leverage = clamp(st.leverage + 24); nudgeMood(1)
         raise(st.emp.id === 'product' ? 0.9 : 0.6)
         say('you', 'I have an offer at a higher fixed number, but your team is my first choice.')
-        say('them', st.emp.id === 'product' ? 'Then let us not lose you over process. I can do better.' : 'Thank you for telling me. Let me take that to my manager.')
+        say('them', st.emp.id === 'product'
+          ? 'Then let us not lose you over process. I can do better — do not tell my founder.'
+          : 'Thank you for telling me. …I would rather not lose you over two thousand a month. Give me a day.')
       }
       break
     }
@@ -124,33 +138,33 @@ export function play(s: NegState, move: Move): NegState {
       st.variablePct = Math.max(0, st.variablePct - 6)
       raise(0.2)
       say('you', 'Can we move some of the variable into fixed? I would rather have certainty.')
-      say('them', `I can shift a little. The headline stays the same — about ${st.variablePct}% variable now.`)
+      say('them', `I can shift a little — the headline does not change, it just looks different. About ${st.variablePct}% variable now. …Honestly, it is the same money.`)
       break
     }
     case 'joining': {
       st.joining = Math.max(st.joining, st.emp.id === 'product' ? 100000 : 50000)
       st.leverage = clamp(st.leverage - 3)
       say('you', 'If the fixed number is tight, could we look at a joining bonus instead?')
-      say('them', `I can do ₹${(st.joining / 100000).toFixed(1)} lakh one time, with a twelve-month clawback.`)
+      say('them', `…I can do ₹${(st.joining / 100000).toFixed(1)} lakh one time. Clawback if you leave inside twelve months. Sorry — that is the policy, not me.`)
       break
     }
     case 'relocation': {
       st.relocation = Math.max(st.relocation, 40000)
       st.leverage = clamp(st.leverage - 2)
       say('you', 'Is there a relocation allowance for moving cities?')
-      say('them', 'Yes — a one-time ₹40,000, paid with the first salary.')
+      say('them', 'Yes. Forty thousand, once, with the first salary. — It is taxable, before you ask.')
       break
     }
     case 'annexure': {
       if (st.usedAnnexure) {
         say('you', 'Could you resend the annexure?')
-        say('them', 'It is the same document.')
+        say('them', 'It is the same document. — I have not changed a line since Tuesday.')
       } else {
         st.usedAnnexure = true
         st.revealedCeiling = true
         st.leverage = clamp(st.leverage + 9)
         say('you', 'Before we talk numbers, can you send the full breakup — fixed, variable, PF, gratuity?')
-        say('them', `Of course. Fixed is ₹${(st.offer * (1 - st.variablePct / 100)).toFixed(1)} L, variable ₹${(st.offer * st.variablePct / 100).toFixed(1)} L, and the band for this grade closes near ₹${st.emp.ceiling.toFixed(1)} L.`)
+        say('them', `Yes. — hold on, the sheet I have is from last quarter. Fixed ₹${(st.offer * (1 - st.variablePct / 100)).toFixed(1)} L, variable ₹${(st.offer * st.variablePct / 100).toFixed(1)} L. The band for this grade closes near ₹${st.emp.ceiling.toFixed(1)} L. I should not have said that out loud.`)
       }
       break
     }
@@ -158,13 +172,13 @@ export function play(s: NegState, move: Move): NegState {
       st.turns += 1
       st.leverage = clamp(st.leverage - 4)
       say('you', 'Could I have a day to look at the numbers properly?')
-      say('them', 'Of course. I will hold the offer until tomorrow evening.')
+      say('them', 'Yes — but not past tomorrow evening. I have a review on Thursday and I need this closed.')
       break
     }
     case 'concede': {
       st.leverage = clamp(st.leverage - 12); nudgeMood(1)
       say('you', 'I am happy to accept what you have on the table.')
-      say('them', 'Wonderful. I will send the letter today.')
+      say('them', 'Good. — I mean, that is great news. I will get the letter out today. Or tomorrow morning.')
       st.over = true
       st.outcome = st.offer < st.opening + 0.7 ? 'lowball' : 'deal'
       break
@@ -172,16 +186,16 @@ export function play(s: NegState, move: Move): NegState {
     case 'walk': {
       say('you', 'I do not think we will get there. Thank you for your time.')
       if (st.offer >= st.emp.ceiling - 0.15) {
-        say('them', 'Wait — let me check one more thing with my manager.')
+        say('them', 'Wait — wait. Do not walk yet. Let me check one thing with my manager.')
         raise(0.3)
         st.over = true
         st.outcome = 'deal'
       } else if (st.mood === 'cold' && st.leverage < 30) {
-        say('them', 'Then I think we should stop here.')
+        say('them', 'Then I think we should stop here. — I will be honest, we will fill this by Friday.')
         st.over = true
         st.outcome = 'withdrawn'
       } else {
-        say('them', 'Understood. All the best.')
+        say('them', 'Understood. …All the best, genuinely.')
         st.over = true
         st.outcome = 'walked'
       }
@@ -189,10 +203,17 @@ export function play(s: NegState, move: Move): NegState {
     }
   }
 
+  st.tell = st.over
+    ? 'closes the laptop'
+    : st.leverage > 70 ? 'leans back, pen down'
+    : st.leverage > 45 ? 'takes a note'
+    : st.mood === 'cold' ? 'checks the phone, not you'
+    : 'taps the pen twice'
+
   if (!st.over && st.turns <= 0) {
     st.over = true
     st.outcome = st.offer > st.opening + 0.5 ? 'deal' : 'lowball'
-    say('them', 'I need to close this today, so let me put the final number in writing.')
+    say('them', 'I have to close this today — my manager is asking. Let me put the final number in writing.')
   }
   return st
 }
