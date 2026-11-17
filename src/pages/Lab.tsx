@@ -4,6 +4,8 @@ import { Optics } from '@/lab/Optics'
 import { SetLogic } from '@/lab/SetLogic'
 import { SortingRace } from '@/lab/SortingRace'
 import { OfferDesk } from '@/lab/OfferDesk'
+import { GaltonBoard } from '@/lab/GaltonBoard'
+import { Negotiation } from '@/lab/Negotiation'
 import { Pathfind } from '@/lab/Pathfind'
 import { MatrixLab } from '@/lab/MatrixLab'
 import { Bayes } from '@/lab/Bayes'
@@ -54,6 +56,18 @@ const STAGES: Stage[] = [
     name: 'Fold the net',
     objective: 'Scrub the slider to fold a flat net into a box.',
     render: () => <FoldNet />
+  },
+  {
+    id: 'galton',
+    name: 'Galton board',
+    objective: 'Each row is one answer. Drop a hundred interviews and watch where the pile lands.',
+    render: () => <GaltonBoard />
+  },
+  {
+    id: 'negotiate',
+    name: 'Negotiation',
+    objective: 'Six moves against a hidden ceiling. Leverage is visible; their limit is not.',
+    render: () => <Negotiation />
   },
   {
     id: 'offer',
