@@ -43,6 +43,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
               <Command.Group heading="Test">
                 <Item onSelect={() => go('/mock')} icon={<Gamepad2 className="h-4 w-4" />} label="Full mock test" />
                 <Item onSelect={() => go('/interview')} icon={<Gamepad2 className="h-4 w-4" />} label="The interview (scene)" />
+                <Item onSelect={() => go('/negotiate')} icon={<Gamepad2 className="h-4 w-4" />} label="Negotiation (salary)" />
                 <Item onSelect={() => go('/gd')} icon={<Gamepad2 className="h-4 w-4" />} label="Group discussion (scene)" />
                 <Item onSelect={() => go('/lab')} icon={<Gamepad2 className="h-4 w-4" />} label="Workspace" />
               </Command.Group>

@@ -14,6 +14,7 @@ const Mock = lazy(() => import('@/pages/Mock'))
 const Lab = lazy(() => import('@/pages/Lab'))
 const Interview = lazy(() => import('@/pages/Interview'))
 const GroupDiscussion = lazy(() => import('@/pages/GroupDiscussion'))
+const Negotiation = lazy(() => import('@/pages/Negotiation'))
 const MenuPage = lazy(() => import('@/pages/Menu'))
 const Mastermind = lazy(() => import('@/games/Mastermind'))
 const SequenceGame = lazy(() => import('@/games/Sequence'))
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="lab" element={<Lab />} />
         <Route path="interview" element={<Interview />} />
         <Route path="gd" element={<GroupDiscussion />} />
+        <Route path="negotiate" element={<Negotiation />} />
         <Route path="arcade" element={<Arcade />} />
         <Route path="arcade/mastermind" element={<Mastermind />} />
         <Route path="arcade/sequence" element={<SequenceGame />} />

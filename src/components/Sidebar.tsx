@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { BarChart3, BookOpen, Clock, FlaskConical, Home, Languages, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
+import { BarChart3, BookOpen, Clock, FlaskConical, Handshake, Home, Languages, Layers, Scale, Sparkles, Users, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -75,6 +75,12 @@ export function Sidebar() {
         <NavLink to="/gd" className={({ isActive }) => cn(item, 'mt-1 border-2 border-ink bg-card', isActive && active)}>
           <Users className="h-4 w-4 shrink-0 text-c2" />
           <span className="min-w-0 flex-1 truncate">Group discussion</span>
+          <span className="font-mono text-[9px] font-bold text-ink-3">new</span>
+        </NavLink>
+
+        <NavLink to="/negotiate" className={({ isActive }) => cn(item, 'mt-1 border-2 border-ink bg-card', isActive && active)}>
+          <Handshake className="h-4 w-4 shrink-0 text-c3" />
+          <span className="min-w-0 flex-1 truncate">Negotiation</span>
           <span className="font-mono text-[9px] font-bold text-ink-3">new</span>
         </NavLink>
 

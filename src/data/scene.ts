@@ -273,7 +273,8 @@ export function drawQuestions() {
   while (picked.filter((q) => FOLLOWUPS[q.id]).length < 2 && guard++ < 20) {
     const candidate = followable.find((q) => !picked.includes(q))
     if (!candidate) break
-    const victimIndex = picked.findIndex((q) => !FOLLOWUPS[q.id] && q.round !== 'Your CV')
+    // swap inside the same round, so the two-per-round balance survives
+    const victimIndex = picked.findIndex((q) => !FOLLOWUPS[q.id] && q.round === candidate.round)
     if (victimIndex < 0) break
     picked[victimIndex] = candidate
   }
