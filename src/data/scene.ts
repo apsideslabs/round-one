@@ -12,6 +12,7 @@ export interface Opt {
 
 export interface Q {
   id: string
+  level: 1 | 2 | 3
   round: string
   scene: Scene
   ask: string
@@ -23,7 +24,7 @@ export interface Q {
 
 export const QUESTIONS: Q[] = [
   {
-    id: 'i1', round: 'Introduction', scene: 'wide', ask: 'Tell me about yourself.',
+    id: 'i1', level: 1, round: 'Introduction', scene: 'wide', ask: 'Tell me about yourself.',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: 'Recite the CV from school onward', fx: [-2, 0, -1], grade: 'weak', heard: 'a list of institutions, in order' },
@@ -35,7 +36,7 @@ export const QUESTIONS: Q[] = [
     why: 'One line of identity, one number of proof, one line of direction. Twenty seconds, and it opens the project you want them to ask about.'
   },
   {
-    id: 'i2', round: 'Introduction', scene: 'panel', ask: 'What do you know about us?',
+    id: 'i2', level: 1, round: 'Introduction', scene: 'panel', ask: 'What do you know about us?',
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
       { label: '“You are a big company in IT services.”', fx: [0, -1, 0], grade: 'weak', heard: 'a sentence that fits fifty companies' },
@@ -47,7 +48,7 @@ export const QUESTIONS: Q[] = [
     why: 'The pre-placement talk is the cheat sheet, but repeating it back is not the same as having a view. One product, one detail, one link to your own work.'
   },
   {
-    id: 'i3', round: 'Introduction', scene: 'wide', ask: 'Why should we take you and not the person outside?',
+    id: 'i3', level: 2, round: 'Introduction', scene: 'wide', ask: 'Why should we take you and not the person outside?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“I am the best in my class.”', fx: [0, -1, -1], grade: 'weak', heard: 'a claim with nothing behind it' },
@@ -59,7 +60,7 @@ export const QUESTIONS: Q[] = [
     why: 'Differentiation is not superiority. Name the specific experience that most of the queue does not have.'
   },
   {
-    id: 'p1', round: 'Project', scene: 'panel', ask: 'Walk me through this project.',
+    id: 'p1', level: 1, round: 'Project', scene: 'panel', ask: 'Walk me through this project.',
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
       { label: 'Describe what it does, no numbers', fx: [0, 0, -1], grade: 'ok', heard: 'features, no outcome' },
@@ -71,7 +72,7 @@ export const QUESTIONS: Q[] = [
     why: 'Problem, build, number, then the one technical detail that proves you were inside it.'
   },
   {
-    id: 'p2', round: 'Project', scene: 'board', ask: 'What was the hardest bug you hit?',
+    id: 'p2', level: 2, round: 'Project', scene: 'board', ask: 'What was the hardest bug you hit?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“There were no real bugs, it worked first time.”', fx: [-2, -1, -2], grade: 'weak', heard: 'either a toy or a story' },
@@ -83,7 +84,7 @@ export const QUESTIONS: Q[] = [
     why: 'They are testing method, not cleverness: symptom, hypothesis, instrument, fix.'
   },
   {
-    id: 'p3', round: 'Project', scene: 'panel', ask: 'What would you do differently if you rebuilt it?',
+    id: 'p3', level: 2, round: 'Project', scene: 'panel', ask: 'What would you do differently if you rebuilt it?',
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
       { label: '“Nothing, it works fine.”', fx: [-1, 0, -2], grade: 'weak', heard: 'no reflection' },
@@ -95,7 +96,7 @@ export const QUESTIONS: Q[] = [
     why: 'This question measures whether you can see your own work clearly. One specific change with a number attached.'
   },
   {
-    id: 't1', round: 'Technical', scene: 'board', ask: 'How does a hash map actually work?',
+    id: 't1', level: 2, round: 'Technical', scene: 'board', ask: 'How does a hash map actually work?',
     moods: ['neutral', 'neutral', 'neutral'],
     opts: [
       { label: '“I use the library, I don’t know the internals.”', fx: [-2, 1, 0], grade: 'weak', heard: 'honest, but no depth' },
@@ -107,7 +108,7 @@ export const QUESTIONS: Q[] = [
     why: 'Mechanism, collision handling, resize — then name one thing you are unsure about. Admitting an edge is stronger than inventing one.'
   },
   {
-    id: 't2', round: 'Technical', scene: 'board', ask: 'Reverse a linked list. Talk while you write.',
+    id: 't2', level: 2, round: 'Technical', scene: 'board', ask: 'Reverse a linked list. Talk while you write.',
     moods: ['neutral', 'neutral', 'neutral'],
     opts: [
       { label: 'Stay silent until you have the full solution', fx: [0, -1, -1], grade: 'ok', heard: 'nothing to evaluate until the end' },
@@ -119,7 +120,7 @@ export const QUESTIONS: Q[] = [
     why: 'They score the running commentary. Silence is unscoreable; an invariant plus edge cases is a hire signal.'
   },
   {
-    id: 't3', round: 'Technical', scene: 'board', ask: 'SQL or NoSQL for a payments ledger — which, and why?',
+    id: 't3', level: 3, round: 'Technical', scene: 'board', ask: 'SQL or NoSQL for a payments ledger — which, and why?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“NoSQL, it is faster.”', fx: [-1, 0, -1], grade: 'weak', heard: 'a slogan' },
@@ -131,7 +132,7 @@ export const QUESTIONS: Q[] = [
     why: 'Name the guarantee, then the cost of not having it. The acronym alone is a coin flip.'
   },
   {
-    id: 't4', round: 'Technical', scene: 'panel', ask: 'Your API is slow in production. What do you check first?',
+    id: 't4', level: 3, round: 'Technical', scene: 'panel', ask: 'Your API is slow in production. What do you check first?',
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
       { label: '“Add more servers.”', fx: [-1, 0, -1], grade: 'weak', heard: 'buying your way out' },
@@ -143,7 +144,7 @@ export const QUESTIONS: Q[] = [
     why: 'The answer they want is a measurement plan, not a fix. Guessing first is the failure mode.'
   },
   {
-    id: 'b1', round: 'Behavioural', scene: 'panel', ask: 'Tell me about a time you failed.',
+    id: 'b1', level: 1, round: 'Behavioural', scene: 'panel', ask: 'Tell me about a time you failed.',
     moods: ['sceptical', 'neutral', 'neutral'],
     opts: [
       { label: '“I have never really failed.”', fx: [-1, -1, -1], grade: 'weak', heard: 'no self-awareness' },
@@ -155,7 +156,7 @@ export const QUESTIONS: Q[] = [
     why: 'The failure should cost something real, and the change should still be visible in how you work today.'
   },
   {
-    id: 'b2', round: 'Behavioural', scene: 'panel', ask: 'A teammate is not doing their share. What did you do?',
+    id: 'b2', level: 2, round: 'Behavioural', scene: 'panel', ask: 'A teammate is not doing their share. What did you do?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“I did their work quietly.”', fx: [0, 0, -1], grade: 'ok', heard: 'you absorb problems instead of solving them' },
@@ -167,7 +168,7 @@ export const QUESTIONS: Q[] = [
     why: 'One conversation before escalation, and a concrete mechanism afterwards. That is what "teamwork" means to them.'
   },
   {
-    id: 'b3', round: 'Behavioural', scene: 'wide', ask: 'Tell me about a time you disagreed with a senior.',
+    id: 'b3', level: 2, round: 'Behavioural', scene: 'wide', ask: 'Tell me about a time you disagreed with a senior.',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“I never disagree with seniors.”', fx: [-1, -1, -1], grade: 'weak', heard: 'no judgement of your own' },
@@ -179,7 +180,7 @@ export const QUESTIONS: Q[] = [
     why: 'Disagreement is scored on method: bring evidence, accept the decision, do not sabotage it.'
   },
   {
-    id: 'h1', round: 'HR', scene: 'wide', ask: 'Why this company, and not the one next door?',
+    id: 'h1', level: 1, round: 'HR', scene: 'wide', ask: 'Why this company, and not the one next door?',
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
       { label: '“Good growth, good culture.”', fx: [0, -1, 0], grade: 'weak', heard: 'could be any company' },
@@ -191,7 +192,7 @@ export const QUESTIONS: Q[] = [
     why: 'A reason that cannot be copy-pasted to the next company is the only kind that counts.'
   },
   {
-    id: 'h2', round: 'HR', scene: 'panel', ask: 'Any posting, any shift, anywhere in India?',
+    id: 'h2', level: 2, round: 'HR', scene: 'panel', ask: 'Any posting, any shift, anywhere in India?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“Only if it is my home city.”', fx: [-1, -2, -1], grade: 'weak', heard: 'a constraint they cannot staff around' },
@@ -203,7 +204,7 @@ export const QUESTIONS: Q[] = [
     why: 'This is a retention question wearing a logistics costume. Answer the fear behind it.'
   },
   {
-    id: 'h3', round: 'HR', scene: 'wide', ask: 'What is your expected salary?',
+    id: 'h3', level: 2, round: 'HR', scene: 'wide', ask: 'What is your expected salary?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
       { label: '“Whatever the company policy is.”', fx: [0, -1, 0], grade: 'ok', heard: 'no research' },
@@ -215,7 +216,7 @@ export const QUESTIONS: Q[] = [
     why: 'A range with a source beats both a demand and a shrug. Say fixed, not CTC.'
   },
   {
-    id: 'h4', round: 'HR', scene: 'panel', ask: 'Do you have other offers? Will you join if we make one?',
+    id: 'h4', level: 2, round: 'HR', scene: 'panel', ask: 'Do you have other offers? Will you join if we make one?',
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
       { label: '“No offers at all.”', fx: [-1, -1, -1], grade: 'weak', heard: 'low demand' },
@@ -227,7 +228,7 @@ export const QUESTIONS: Q[] = [
     why: 'They are managing yield. Honest scarcity plus a specific reason is what makes an offer safe to give.'
   },
   {
-    id: 'y1', round: 'Your turn', scene: 'wide', ask: 'Any questions for us?',
+    id: 'y1', level: 1, round: 'Your turn', scene: 'wide', ask: 'Any questions for us?',
     moods: ['smile', 'smile', 'neutral'],
     opts: [
       { label: '“No, I think I’m good.”', fx: [-1, -1, -1], grade: 'weak', heard: 'not curious' },
@@ -239,7 +240,7 @@ export const QUESTIONS: Q[] = [
     why: 'The best closing question is about their expectations of you, not your benefits.'
   },
   {
-    id: 'y2', round: 'Your turn', scene: 'panel', ask: 'Anything you want to add before we finish?',
+    id: 'y2', level: 2, round: 'Your turn', scene: 'panel', ask: 'Anything you want to add before we finish?',
     moods: ['neutral', 'neutral', 'neutral'],
     opts: [
       { label: '“No, thank you.”', fx: [0, 0, -1], grade: 'ok', heard: 'a polite exit' },
@@ -251,6 +252,30 @@ export const QUESTIONS: Q[] = [
     why: 'The last word is a free slot. Use it for the one fact you would regret leaving out.'
   }
 ]
+
+/** The three panellists want different things, and score the same words differently. */
+export const WANTS = {
+  tech: { name: 'P·ONE', wants: 'evidence, mechanism, and what you do not know', weight: { vague: -2, generic: -2, specific: 2, number: 2, honest: 1, blame: -1 } },
+  hr: { name: 'P·TWO', wants: 'motivation, honesty, and whether you will stay', weight: { vague: -1, generic: -2, specific: 1, number: 1, honest: 2, blame: -2 } },
+  mgr: { name: 'P·THREE', wants: 'ownership, judgement, and how you behave when it goes wrong', weight: { vague: -1, generic: -1, specific: 1, number: 1, honest: 1, blame: -2 } }
+} as const
+
+export type Tag = keyof typeof WANTS.tech.weight
+
+/** Score an option for one panellist from its tag rather than a hand-tuned array. */
+export function scoreFor(who: keyof typeof WANTS, tag: Tag): number {
+  return WANTS[who].weight[tag] as number
+}
+
+/** Pick the next question at the right difficulty, skipping what has been asked. */
+export function pickNext(pool: Q[], level: 1 | 2 | 3, asked: string[]): Q | undefined {
+  const fresh = pool.filter((q) => !asked.includes(q.id))
+  const exact = fresh.filter((q) => q.level === level)
+  if (exact.length) return exact[Math.floor(Math.random() * exact.length)]
+  const near = fresh.filter((q) => Math.abs(q.level - level) === 1)
+  if (near.length) return near[Math.floor(Math.random() * near.length)]
+  return fresh[Math.floor(Math.random() * fresh.length)]
+}
 
 /** Two questions from each round, so a run is ten questions and never the same twice. */
 export function drawQuestions() {
@@ -353,7 +378,7 @@ export function cvQuestions(p: { skills: string[]; hasInternship: boolean; cgpa:
   const skill2 = p.skills[1] ?? 'SQL'
 
   out.push({
-    id: 'cv-skill', round: 'Your CV', scene: 'panel',
+    id: 'cv-skill', level: 2, round: 'Your CV', scene: 'panel',
     ask: `You list ${skill}. Where did you actually use it?`,
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: [
@@ -367,7 +392,7 @@ export function cvQuestions(p: { skills: string[]; hasInternship: boolean; cgpa:
   })
 
   out.push({
-    id: 'cv-gap', round: 'Your CV', scene: 'board',
+    id: 'cv-gap', level: 2, round: 'Your CV', scene: 'board',
     ask: p.hasInternship
       ? 'What did you actually ship in that internship?'
       : 'No internship on this CV. What did you do with the time?',
@@ -392,7 +417,7 @@ export function cvQuestions(p: { skills: string[]; hasInternship: boolean; cgpa:
   })
 
   out.push({
-    id: 'cv-depth', round: 'Your CV', scene: 'board',
+    id: 'cv-depth', level: 2, round: 'Your CV', scene: 'board',
     ask: `Say ${skill2} is doing something you did not expect. How do you find out why?`,
     moods: ['neutral', 'neutral', 'neutral'],
     opts: [
@@ -407,7 +432,7 @@ export function cvQuestions(p: { skills: string[]; hasInternship: boolean; cgpa:
 
   if (p.cgpa !== null && p.cgpa < 7) {
     out.push({
-      id: 'cv-cgpa', round: 'Your CV', scene: 'wide',
+      id: 'cv-cgpa', level: 2, round: 'Your CV', scene: 'wide',
       ask: 'Your marks are on the lower side. Why should we overlook that?',
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RotateCcw, ChevronRight, Clock, Check, X } from 'lucide-react'
 import { Person, Bubble, Defs, type Mood } from '@/components/comic/Faces'
-import { drawQuestions, followFor, type Opt, type Panel, type Q, type Follow } from '@/data/scene'
+import { QUESTIONS, drawQuestions, followFor, pickNext, WANTS, type Opt, type Panel, type Q, type Follow } from '@/data/scene'
 import { saveCV, loadCV } from '@/lib/cv'
 import { parseCV } from '@/lib/cvintel'
 import { buildPersonalQuestions, buildIntakeQuestions, type Intake } from '@/data/personal'
@@ -26,11 +26,18 @@ export default function Interview() {
   const [mode, setMode] = useState<'cv' | 'intake'>('cv')
   const [intake, setIntake] = useState<Intake>({ role: 'SDE', year: '4th year', skills: [], internship: false, cgpa: 'mid' })
   const intakeQs = useMemo(() => buildIntakeQuestions(intake), [intake])
-  const questions = useMemo(() => {
+  const pool = useMemo(() => {
     const built = !intel.empty ? personal : intake.skills.length ? intakeQs : []
-    const base = drawQuestions().slice(0, Math.max(4, 12 - built.length))
-    return [...built, ...base]
+    return [...built, ...drawQuestions(), ...QUESTIONS]
   }, [seed, intel, personal, intake, intakeQs])
+
+  const [level, setLevel] = useState<1 | 2 | 3>(1)
+  const [live, setLive] = useState<Q[] | null>(null)
+
+  // the interview opens on your own CV, then adapts to how you are doing.
+  // live starts as a copy of the opening and grows; it must never replace it.
+  const opening = useMemo(() => pool.slice(0, 12), [pool])
+  const questions = live ?? opening
 
   const [typed, setTyped] = useState('')
   const [typedOpen, setTypedOpen] = useState(false)
@@ -53,6 +60,21 @@ export default function Interview() {
     return () => window.clearInterval(id)
   }, [phase, idx, typedOpen])
 
+  /** after every answer the difficulty moves: strong climbs, weak drops */
+  const adapt = (grade: 'strong' | 'ok' | 'weak' | null) => {
+    const next: 1 | 2 | 3 = grade === 'strong'
+      ? (Math.min(3, level + 1) as 1 | 2 | 3)
+      : grade === 'weak' ? (Math.max(1, level - 1) as 1 | 2 | 3) : level
+    setLevel(next)
+    setLive((l) => {
+      const cur = l ?? opening
+      if (cur.length >= 12) return cur
+      const used = cur.map((x) => x.id)
+      const nxt = pickNext(pool, next, used)
+      return nxt ? [...cur, nxt] : cur
+    })
+  }
+
   const answer = (opt: Opt | null) => {
     setScores((s) => [s[0] + (opt?.fx[0] ?? -2), s[1] + (opt?.fx[1] ?? -2), s[2] + (opt?.fx[2] ?? -2)])
     const follow = followFor(q.id, opt)
@@ -63,6 +85,7 @@ export default function Interview() {
     }
     setLast({ q, opt })
     setLog((l) => [...l, { q, opt }])
+    adapt(opt?.grade ?? null)
     setPhase('debrief')
   }
 
@@ -73,6 +96,7 @@ export default function Interview() {
       setLog((l) => [...l, next])
       return next
     })
+    adapt(fopt?.grade ?? null)
     setPhase('debrief')
   }
 
@@ -88,6 +112,7 @@ export default function Interview() {
 
   const restart = () => {
     setSeed((s) => s + 1); setIdx(0); setScores([0, 0, 0]); setLog([]); setLast(null); setPhase('ask')
+    setLevel(1); setLive(null)
     setTyped(''); setTypedOpen(false); setRubric(null); setFollowText(''); setFollowRubric(null)
   }
 
@@ -509,6 +534,22 @@ export default function Interview() {
                 ))}
               </ul>
             </div>
+            <div className="grid gap-1.5 rounded-xl border-2 border-ink bg-card p-3 shadow-[3px_3px_0_var(--color-ink)] sm:grid-cols-3">
+              {(Object.keys(WANTS) as Array<keyof typeof WANTS>).map((k, i) => {
+                const strong = log.filter(({ opt }) => opt?.grade === 'strong').length
+                const weak = log.filter(({ opt }) => opt?.grade === 'weak').length
+                return (
+                  <div key={k}>
+                    <p className="mono-label">{WANTS[k].name} wanted</p>
+                    <p className="text-[11.5px] font-medium leading-snug text-ink-2">{WANTS[k].wants}</p>
+                    <p className={`mt-1 font-mono text-[9px] font-bold uppercase ${verdicts[i] === 'select' ? 'text-ok' : verdicts[i] === 'maybe' ? 'text-[#b8860b]' : 'text-bad'}`}>
+                      {verdicts[i] === 'select' ? 'got it' : verdicts[i] === 'maybe' ? 'partly' : `not from ${strong + weak} answers`}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" onClick={restart} className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-c1 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-[3px_3px_0_var(--color-ink)]">
                 <RotateCcw className="h-3.5 w-3.5" /> walk in again

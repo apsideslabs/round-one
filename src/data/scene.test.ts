@@ -60,3 +60,35 @@ describe('follow-up pressure', () => {
     }
   })
 })
+
+describe('adaptivity', () => {
+  it('picks a harder question after a strong run and an easier one after a weak run', async () => {
+    const { pickNext, QUESTIONS } = await import('./scene')
+    const hard = pickNext(QUESTIONS, 3, [])
+    const easy = pickNext(QUESTIONS, 1, [])
+    expect(hard?.level).toBe(3)
+    expect(easy?.level).toBe(1)
+  })
+
+  it('never repeats a question it has already asked', async () => {
+    const { pickNext, QUESTIONS } = await import('./scene')
+    const asked = QUESTIONS.slice(0, 5).map((q) => q.id)
+    const next = pickNext(QUESTIONS, 2, asked)
+    expect(next && asked.includes(next.id)).toBe(false)
+  })
+
+  it('falls back to a neighbouring level when the exact one runs out', async () => {
+    const { pickNext, QUESTIONS } = await import('./scene')
+    const level3 = QUESTIONS.filter((q) => q.level === 3).map((q) => q.id)
+    const next = pickNext(QUESTIONS, 3, level3)
+    expect(next).toBeDefined()
+    expect(Math.abs((next?.level ?? 0) - 3)).toBeLessThanOrEqual(1)
+  })
+
+  it('each panellist weighs the same words differently', async () => {
+    const { scoreFor } = await import('./scene')
+    expect(scoreFor('tech', 'vague')).toBeLessThan(scoreFor('hr', 'vague'))
+    expect(scoreFor('hr', 'blame')).toBeLessThan(scoreFor('tech', 'blame'))
+    expect(scoreFor('tech', 'specific')).toBeGreaterThan(0)
+  })
+})

@@ -13,7 +13,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
   if (project) {
     const tech = skillsForProject(intel, project)
     push({
-      id: 'p-proj', round: 'Your CV', scene: 'panel',
+      id: 'p-proj', level: 2, round: 'Your CV', scene: 'panel',
       ask: `“${short(project, 46)}” — what was the hardest part?`,
       moods: ['neutral', 'smile', 'neutral'],
       opts: [
@@ -33,7 +33,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
   if (intel.metrics.length) {
     const metric = intel.metrics[0]
     push({
-      id: 'p-metric', round: 'Your CV', scene: 'board',
+      id: 'p-metric', level: 2, round: 'Your CV', scene: 'board',
       ask: `Your CV says “${metric}”. How did you measure that?`,
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [
@@ -47,7 +47,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
     })
   } else {
     push({
-      id: 'p-nometric', round: 'Your CV', scene: 'panel',
+      id: 'p-nometric', level: 2, round: 'Your CV', scene: 'panel',
       ask: 'Not one line on this CV has a number in it. Give me one.',
       moods: ['sceptical', 'neutral', 'neutral'],
       opts: [
@@ -65,7 +65,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
   const bullet = intel.bullets.find((b) => b.split(' ').length > 6 && !b.toLowerCase().includes('cgpa'))
   if (bullet) {
     push({
-      id: 'p-bullet', round: 'Your CV', scene: 'panel',
+      id: 'p-bullet', level: 2, round: 'Your CV', scene: 'panel',
       ask: `“${short(bullet)}” — what did you personally do?`,
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [
@@ -84,7 +84,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
   if (unused.length) {
     const skill = unused[0]
     push({
-      id: 'p-unused', round: 'Your CV', scene: 'board',
+      id: 'p-unused', level: 2, round: 'Your CV', scene: 'board',
       ask: `You list ${skill}, but nothing here shows you using it. Where did you?`,
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [
@@ -102,7 +102,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
   const verb = intel.verbs.find((v) => ['led', 'managed', 'mentored'].includes(v))
   if (verb) {
     push({
-      id: 'p-verb', round: 'Your CV', scene: 'panel',
+      id: 'p-verb', level: 2, round: 'Your CV', scene: 'panel',
       ask: `You say you ${verb}. Who disagreed with you, and what happened?`,
       moods: ['neutral', 'smile', 'sceptical'],
       opts: [
@@ -118,7 +118,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
 
   // 6. internship or gap
   push({
-    id: 'p-exp', round: 'Your CV', scene: 'wide',
+    id: 'p-exp', level: 2, round: 'Your CV', scene: 'wide',
     ask: intel.hasInternship
       ? `What did you own at ${intel.companies[0] ?? 'your internship'}?`
       : 'No internship here. What did you do with those months?',
@@ -145,7 +145,7 @@ export function buildPersonalQuestions(intel: CVIntel): Q[] {
   // 7. marks, only when they are low
   if (intel.cgpa !== null && intel.cgpa < 7) {
     push({
-      id: 'p-cgpa', round: 'Your CV', scene: 'wide',
+      id: 'p-cgpa', level: 2, round: 'Your CV', scene: 'wide',
       ask: `Your CGPA is ${intel.cgpa.toFixed(1)}. Why should we look past it?`,
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [
@@ -177,7 +177,7 @@ export function buildIntakeQuestions(i: Intake): Q[] {
   const skill2 = i.skills[1] ?? 'SQL'
 
   out.push({
-    id: 'in-role', round: 'Your CV', scene: 'panel',
+    id: 'in-role', level: 2, round: 'Your CV', scene: 'panel',
     ask: i.role === 'SDE'
       ? 'For a developer role — what have you built end to end, alone?'
       : i.role === 'Data'
@@ -203,7 +203,7 @@ export function buildIntakeQuestions(i: Intake): Q[] {
   })
 
   out.push({
-    id: 'in-skill', round: 'Your CV', scene: 'board',
+    id: 'in-skill', level: 2, round: 'Your CV', scene: 'board',
     ask: `You picked ${skill}. What can you do with it today, without looking it up?`,
     moods: ['neutral', 'smile', 'neutral'],
     opts: [
@@ -218,7 +218,7 @@ export function buildIntakeQuestions(i: Intake): Q[] {
 
   if (i.year === '2nd year' || i.year === '3rd year') {
     out.push({
-      id: 'in-early', round: 'Your CV', scene: 'wide',
+      id: 'in-early', level: 2, round: 'Your CV', scene: 'wide',
       ask: `You still have ${i.year === '2nd year' ? 'two years' : 'a year'}. What are you doing about the gap?`,
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [
@@ -233,7 +233,7 @@ export function buildIntakeQuestions(i: Intake): Q[] {
   }
 
   out.push({
-    id: 'in-exp', round: 'Your CV', scene: 'panel',
+    id: 'in-exp', level: 2, round: 'Your CV', scene: 'panel',
     ask: i.internship ? 'What did you own in that internship?' : 'No internship yet. What have you done with the time instead?',
     moods: ['neutral', 'neutral', 'sceptical'],
     opts: i.internship
@@ -257,7 +257,7 @@ export function buildIntakeQuestions(i: Intake): Q[] {
 
   if (i.cgpa === 'low') {
     out.push({
-      id: 'in-cgpa', round: 'Your CV', scene: 'wide',
+      id: 'in-cgpa', level: 2, round: 'Your CV', scene: 'wide',
       ask: 'Your marks are on the lower side. Why should we look past them?',
       moods: ['neutral', 'neutral', 'sceptical'],
       opts: [
