@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Pause, RotateCcw, Download, Image as ImageIcon, Plus, Trash2, SplitSquareVertical } from 'lucide-react'
-import { buildFilm, sceneAt, ease, spring, rand, ghostWord, grainTile, PALETTES, KINDS, W, H, type Grade, type Kind, type Line } from '@/lib/film'
+import { buildFilm, sceneAt, ease, spring, rand, grainTile, PALETTES, GRADE_LIST, KINDS, W, H, type Grade, type Kind, type Line } from '@/lib/film'
 
 const uid = () => Math.random().toString(36).slice(2, 8)
 const SEED: Line[] = [
@@ -45,6 +45,8 @@ export default function Film() {
   useEffect(() => { pal.current = PALETTES[grade] }, [grade])
 
   const grain = useRef<HTMLImageElement | null>(null)
+  const photoRef = useRef<HTMLImageElement | null>(null)
+  const [photoName, setPhotoName] = useState('')
   useEffect(() => { const img = new Image(); img.src = grainTile(); grain.current = img }, [])
 
   // one loop for the life of the page; every expensive thing is pre-rendered
@@ -67,9 +69,14 @@ export default function Film() {
     bake.height = H
     const bc = bake.getContext('2d')!
     const p0 = PALETTES[grade]
+    const END: Record<Grade, string> = {
+      paper: '#f2ecdd', night: '#141922', blueprint: '#08203c',
+      riso: '#efe2d0', cinema: '#141110', newsprint: '#e6e0d4'
+    }
+    const LIGHT: Grade[] = ['paper', 'riso', 'newsprint']
     const grad = bc.createLinearGradient(0, 0, W, H)
     grad.addColorStop(0, p0.bg)
-    grad.addColorStop(1, grade === 'paper' ? '#f2ecdd' : grade === 'night' ? '#141922' : '#08203c')
+    grad.addColorStop(1, END[grade])
     bc.fillStyle = grad
     bc.fillRect(0, 0, W, H)
 
@@ -94,7 +101,7 @@ export default function Film() {
 
     // perspective floor: horizon lines converging to a vanishing point
     const horizon = H * 0.62
-    bc.strokeStyle = grade === 'paper' ? 'rgba(18,21,26,0.10)' : 'rgba(255,255,255,0.08)'
+    bc.strokeStyle = LIGHT.includes(grade) ? 'rgba(18,21,26,0.10)' : 'rgba(255,255,255,0.08)'
     bc.lineWidth = 1
     for (let i = -8; i <= 8; i++) {
       bc.beginPath()
@@ -110,7 +117,7 @@ export default function Film() {
     // vignette baked in
     const vig = bc.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, H)
     vig.addColorStop(0, 'rgba(0,0,0,0)')
-    vig.addColorStop(1, grade === 'paper' ? 'rgba(18,21,26,0.07)' : 'rgba(0,0,0,0.5)')
+    vig.addColorStop(1, LIGHT.includes(grade) ? 'rgba(18,21,26,0.07)' : 'rgba(0,0,0,0.5)')
     bc.fillStyle = vig
     bc.fillRect(0, 0, W, H)
 
@@ -137,22 +144,99 @@ export default function Film() {
       // the whole backdrop in one blit, nudged a pixel or two so it still breathes
       ctx.drawImage(bake, Math.sin(t * 0.5) * 3, Math.cos(t * 0.4) * 2)
 
+      // an uploaded photograph, duotoned into the grade so it belongs
+      const photo = photoRef.current
+      if (photo?.complete && photo.naturalWidth) {
+        const scale = Math.max(W / photo.naturalWidth, H / photo.naturalHeight)
+        const dw = photo.naturalWidth * scale
+        const dh = photo.naturalHeight * scale
+        ctx.save()
+        ctx.globalAlpha = grade === 'paper' || grade === 'riso' || grade === 'newsprint' ? 0.3 : 0.42
+        ctx.drawImage(photo, (W - dw) / 2 + Math.sin(t * 0.2) * 8, (H - dh) / 2, dw, dh)
+        ctx.globalCompositeOperation = 'multiply'
+        ctx.fillStyle = p.bg
+        ctx.globalAlpha = 0.55
+        ctx.fillRect(0, 0, W, H)
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.globalAlpha = 0.18
+        ctx.fillStyle = p.accent
+        ctx.fillRect(0, 0, W, H)
+        ctx.restore()
+      }
+
       const scene = list.length ? sceneAt(list, t) : null
       if (!scene) { raf = requestAnimationFrame(draw); return }
       const local = t - scene.start
       const drift = Math.sin(t * 0.35) * 16
 
-      // ghost letter
-      const ghost = ghostWord(scene.line.text)
-      if (ghost) {
-        ctx.save()
-        ctx.globalAlpha = grade === 'paper' ? 0.045 : 0.07
-        ctx.fillStyle = p.ink
-        ctx.font = '800 420px "Bricolage Grotesque", Manrope, sans-serif'
-        ctx.textAlign = 'center'
-        ctx.fillText(ghost, W / 2 + drift * 2, H * 0.72)
-        ctx.restore()
+      // ---- backdrop graphic: a different one per shot, never repeated text
+      const motifIndex = list.indexOf(scene) % 6
+      ctx.save()
+      ctx.strokeStyle = p.line
+      ctx.fillStyle = p.line
+      ctx.lineWidth = 1.6
+      const cx0 = W / 2 + drift
+      const cy0 = H / 2
+
+      if (motifIndex === 0) {
+        // concentric arcs turning slowly
+        for (let i = 0; i < 5; i++) {
+          const r = 140 + i * 78
+          const a = t * 0.25 + i * 0.4
+          ctx.globalAlpha = 0.5 - i * 0.07
+          ctx.beginPath(); ctx.arc(cx0, cy0, r, a, a + Math.PI * 1.25); ctx.stroke()
+        }
+      } else if (motifIndex === 1) {
+        // stacked waves
+        for (let i = 0; i < 4; i++) {
+          ctx.globalAlpha = 0.4 - i * 0.06
+          ctx.beginPath()
+          for (let x = 0; x <= W; x += 12) {
+            const y = H * 0.28 + i * 62 + Math.sin(x * 0.011 + t * 1.1 + i) * 16
+            x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+          }
+          ctx.stroke()
+        }
+      } else if (motifIndex === 2) {
+        // radial rays
+        for (let i = 0; i < 28; i++) {
+          const a = (i / 28) * Math.PI * 2 + t * 0.15
+          ctx.globalAlpha = 0.22
+          ctx.beginPath()
+          ctx.moveTo(cx0 + Math.cos(a) * 190, cy0 + Math.sin(a) * 190)
+          ctx.lineTo(cx0 + Math.cos(a) * 760, cy0 + Math.sin(a) * 760)
+          ctx.stroke()
+        }
+      } else if (motifIndex === 3) {
+        // isometric grid
+        ctx.globalAlpha = 0.3
+        for (let i = -8; i <= 8; i++) {
+          ctx.beginPath(); ctx.moveTo(cx0 + i * 90, 0); ctx.lineTo(cx0 + i * 90 + 420, H); ctx.stroke()
+          ctx.beginPath(); ctx.moveTo(cx0 + i * 90, 0); ctx.lineTo(cx0 + i * 90 - 420, H); ctx.stroke()
+        }
+      } else if (motifIndex === 4) {
+        // drifting particles
+        for (let i = 0; i < 70; i++) {
+          const r1 = rand(i, 1), r2 = rand(i, 2)
+          const x = r1 * W + Math.sin(t * 0.6 + i) * 18
+          const y = (r2 * H + t * 22 * (0.4 + r1)) % H
+          ctx.globalAlpha = 0.16 + r1 * 0.2
+          ctx.beginPath(); ctx.arc(x, y, 1 + r2 * 2.2, 0, Math.PI * 2); ctx.fill()
+        }
+      } else {
+        // bracket frames closing in
+        const inset = 60 + Math.sin(t * 0.8) * 10
+        ctx.globalAlpha = 0.35
+        ctx.lineWidth = 3
+        const L = 90
+        ;[[inset, inset, 1, 1], [W - inset, inset, -1, 1], [inset, H - inset, 1, -1], [W - inset, H - inset, -1, -1]].forEach(([x, y, dx, dy]) => {
+          ctx.beginPath()
+          ctx.moveTo(x + dx * L, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * L)
+          ctx.stroke()
+        })
       }
+      ctx.globalAlpha = 1
+      ctx.restore()
 
       const wipe = Math.min(1, local / 0.3)
       ctx.save()
@@ -242,6 +326,35 @@ export default function Film() {
         }
         ctx.globalAlpha = 1
       }
+      // ---- a prop that says what kind of line this is
+      {
+        const first = scene.words[0]
+        if (first) {
+          const px = scene.align === 'center' ? 96 : first.x - 44
+          const py = first.y - first.size * 0.28
+          ctx.save()
+          ctx.strokeStyle = p.accent
+          ctx.fillStyle = p.accent
+          ctx.lineWidth = 3
+          ctx.globalAlpha = Math.min(1, local / 0.5)
+          if (scene.line.kind === 'connector') {
+            ctx.beginPath(); ctx.moveTo(px - 20, py); ctx.lineTo(px + 10, py); ctx.stroke()
+            ctx.beginPath(); ctx.moveTo(px + 2, py - 7); ctx.lineTo(px + 12, py); ctx.lineTo(px + 2, py + 7); ctx.stroke()
+          } else if (scene.line.kind === 'vague') {
+            for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(px - 14 + i * 14, py, 3.2, 0, Math.PI * 2); ctx.fill() }
+          } else if (scene.line.kind === 'specific') {
+            ;[0.5, 0.9, 0.7].forEach((h, i) => { ctx.fillRect(px - 18 + i * 12, py + 10 - 26 * h, 8, 26 * h) })
+          } else if (scene.line.kind === 'number') {
+            ctx.beginPath(); ctx.arc(px - 4, py, 13, 0, Math.PI * 2); ctx.stroke()
+            ctx.beginPath(); ctx.moveTo(px - 4, py - 6); ctx.lineTo(px - 4, py + 6); ctx.stroke()
+          } else {
+            ctx.font = '700 44px Georgia, serif'
+            ctx.fillText('“', px - 18, py + 16)
+          }
+          ctx.restore()
+        }
+      }
+
       scene.words.forEach((word) => {
         const enter = Math.max(0, Math.min(1, (local - word.enter) / 0.5))
         if (enter <= 0) return
@@ -387,8 +500,8 @@ export default function Film() {
             <h1 className="mt-1 font-display text-xl font-extrabold tracking-tight">{title}</h1>
             <p className="text-[11.5px] font-medium text-ink-3">write it line by line · each line is a shot</p>
           </div>
-          <div className="flex gap-1">
-            {(['paper', 'night', 'blueprint'] as Grade[]).map((g) => (
+          <div className="flex flex-wrap gap-1">
+            {GRADE_LIST.map((g) => (
               <button key={g} type="button" onClick={() => setGrade(g)}
                 className={`rounded-md border-2 border-ink px-2 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-wider ${grade === g ? 'bg-ink text-paper' : 'bg-card'}`}>{g}</button>
             ))}
@@ -473,6 +586,30 @@ export default function Film() {
                 className="mt-1 inline-flex items-center gap-1 rounded border-2 border-ink bg-c3 px-2 py-0.5 font-mono text-[8px] font-bold uppercase">
                 <SplitSquareVertical className="h-2.5 w-2.5" /> split into shots
               </button>
+            </div>
+
+            <div className="rounded-xl border-2 border-ink bg-card p-2 shadow-[3px_3px_0_var(--color-ink)]">
+              <p className="mono-label mb-1">backdrop image</p>
+              <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border-2 border-dashed border-ink/40 px-2 py-1.5">
+                <span className="truncate font-mono text-[9px] font-bold uppercase tracking-wider text-ink-3">
+                  {photoName || 'drop a photo — duotoned to the grade'}
+                </span>
+                <span className="rounded border-2 border-ink bg-c3 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase">choose</span>
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (!f) return
+                    const img = new Image()
+                    img.onload = () => { photoRef.current = img; setPhotoName(f.name.slice(0, 22)) }
+                    img.src = URL.createObjectURL(f)
+                  }} />
+              </label>
+              {photoName && (
+                <button type="button" onClick={() => { photoRef.current = null; setPhotoName('') }}
+                  className="mt-1 w-full rounded border-2 border-ink bg-[#f4f2ea] px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase">
+                  remove photo
+                </button>
+              )}
             </div>
 
             <Link to="/interview" className="rounded-xl border-2 border-ink bg-card px-2.5 py-1.5 text-center font-mono text-[9px] font-bold uppercase tracking-wider shadow-[2px_2px_0_var(--color-ink)]">

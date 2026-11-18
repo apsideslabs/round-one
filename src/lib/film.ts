@@ -1,6 +1,6 @@
 /** Scenes built from editable lines — the film is data, not a fixed script. */
 export type Kind = 'number' | 'specific' | 'connector' | 'vague' | 'plain'
-export type Grade = 'paper' | 'night' | 'blueprint'
+export type Grade = 'paper' | 'night' | 'blueprint' | 'riso' | 'cinema' | 'newsprint'
 
 export interface Line { id: string; text: string; kind: Kind }
 
@@ -9,8 +9,13 @@ export interface Palette { bg: string; ink: string; muted: string; accent: strin
 export const PALETTES: Record<Grade, Palette> = {
   paper: { bg: '#faf6ea', ink: '#12151a', muted: 'rgba(18,21,26,0.45)', accent: '#ff4b26', number: '#a86f00', vague: '#8a8f96', line: 'rgba(18,21,26,0.16)', grain: 0.05 },
   night: { bg: '#0e1116', ink: '#f4f1e6', muted: 'rgba(244,241,230,0.45)', accent: '#5eead4', number: '#fbbf24', vague: '#5b6470', line: 'rgba(244,241,230,0.16)', grain: 0.08 },
-  blueprint: { bg: '#0b2545', ink: '#dbeafe', muted: 'rgba(219,234,254,0.5)', accent: '#7dd3fc', number: '#fde68a', vague: '#4a6fa5', line: 'rgba(219,234,254,0.22)', grain: 0.1 }
+  blueprint: { bg: '#0b2545', ink: '#dbeafe', muted: 'rgba(219,234,254,0.5)', accent: '#7dd3fc', number: '#fde68a', vague: '#4a6fa5', line: 'rgba(219,234,254,0.22)', grain: 0.1 },
+  riso: { bg: '#f6efe4', ink: '#1d1a2f', muted: 'rgba(29,26,47,0.45)', accent: '#ff5d8f', number: '#2f6bff', vague: '#9a90b5', line: 'rgba(29,26,47,0.14)', grain: 0.12 },
+  cinema: { bg: '#0a0908', ink: '#f2e9dc', muted: 'rgba(242,233,220,0.42)', accent: '#e8a33d', number: '#e8a33d', vague: '#5a5348', line: 'rgba(242,233,220,0.14)', grain: 0.14 },
+  newsprint: { bg: '#efeae0', ink: '#141414', muted: 'rgba(20,20,20,0.5)', accent: '#8c1d18', number: '#8c1d18', vague: '#8a857a', line: 'rgba(20,20,20,0.18)', grain: 0.16 }
 }
+
+export const GRADE_LIST: Grade[] = ['paper', 'night', 'blueprint', 'riso', 'cinema', 'newsprint']
 
 export const KINDS: Kind[] = ['plain', 'specific', 'number', 'connector', 'vague']
 
