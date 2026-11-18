@@ -47,22 +47,67 @@ export default function Film() {
   const grain = useRef<HTMLImageElement | null>(null)
   useEffect(() => { const img = new Image(); img.src = grainTile(); grain.current = img }, [])
 
-  // one loop for the life of the page
+  // one loop for the life of the page; every expensive thing is pre-rendered
+  const fpsRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
     const cv = canvas.current
     if (!cv) return
-    const ctx = cv.getContext('2d')!
+    const ctx = cv.getContext('2d', { alpha: false })!
+    // draw at 3/4 resolution and let CSS upscale: 44% of the pixels, same layout
+    const RW = 960
+    const RH = 540
+    const sx = RW / W
+    const sy = RH / H
+    cv.width = RW
+    cv.height = RH
+
+    // ---- one baked layer: gradient + dots + grain + vignette, drawn once
+    const bake = document.createElement('canvas')
+    bake.width = W
+    bake.height = H
+    const bc = bake.getContext('2d')!
+    const p0 = PALETTES[grade]
+    const grad = bc.createLinearGradient(0, 0, W, H)
+    grad.addColorStop(0, p0.bg)
+    grad.addColorStop(1, grade === 'paper' ? '#f2ecdd' : grade === 'night' ? '#141922' : '#08203c')
+    bc.fillStyle = grad
+    bc.fillRect(0, 0, W, H)
+
+    // dot field baked in: no per-frame pattern fill
+    bc.fillStyle = p0.line
+    for (let x = 22; x < W; x += 44) {
+      for (let y = 22; y < H; y += 44) {
+        bc.beginPath(); bc.arc(x, y, 1.2, 0, Math.PI * 2); bc.fill()
+      }
+    }
+
+    // grain baked in: overlay blending happens once, not sixty times a second
+    const grainImg = grain.current
+    if (grainImg?.complete) {
+      bc.globalAlpha = p0.grain * 3.2
+      bc.globalCompositeOperation = 'overlay'
+      const pat = bc.createPattern(grainImg, 'repeat')
+      if (pat) { bc.fillStyle = pat; bc.fillRect(0, 0, W, H) }
+      bc.globalCompositeOperation = 'source-over'
+      bc.globalAlpha = 1
+    }
+
+    // vignette baked in
+    const vig = bc.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, H)
+    vig.addColorStop(0, 'rgba(0,0,0,0)')
+    vig.addColorStop(1, grade === 'paper' ? 'rgba(18,21,26,0.07)' : 'rgba(0,0,0,0.5)')
+    bc.fillStyle = vig
+    bc.fillRect(0, 0, W, H)
+
     let raf = 0
     let last = performance.now()
-
-    // offscreen buffer for bloom: accents are drawn here, blurred, then laid back
-    const bloom = document.createElement('canvas')
-    bloom.width = Math.floor(W / 3)
-    bloom.height = Math.floor(H / 3)
-    const bctx = bloom.getContext('2d')!
+    let frames = 0
+    let fpsAt = performance.now()
 
     const draw = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000)
+      // 30fps is enough for type motion and halves the work
+      if (now - last < 32) { raf = requestAnimationFrame(draw); return }
+      const dt = Math.min(0.06, (now - last) / 1000)
       last = now
       if (playing.current) {
         time.current += dt
@@ -72,41 +117,21 @@ export default function Film() {
       const p = pal.current
       const list = scenes.current
 
-      const dpr = Math.min(2, window.devicePixelRatio || 1)
-      if (cv.width !== W * dpr) { cv.width = W * dpr; cv.height = H * dpr }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      bctx.setTransform(1, 0, 0, 1, 0, 0)
-      bctx.clearRect(0, 0, bloom.width, bloom.height)
+      ctx.setTransform(sx, 0, 0, sy, 0, 0)
 
-      // ---------- backdrop: gradient, parallax grid, drifting ghost letter
-      const bg = ctx.createLinearGradient(0, 0, W, H)
-      bg.addColorStop(0, p.bg)
-      bg.addColorStop(1, grade === 'paper' ? '#f2ecdd' : grade === 'night' ? '#141922' : '#08203c')
-      ctx.fillStyle = bg
-      ctx.fillRect(0, 0, W, H)
-
-      const drift = Math.sin(t * 0.35) * 18
-      ctx.fillStyle = p.line
-      for (let x = -60; x < W + 60; x += 44) {
-        for (let y = -60; y < H + 60; y += 44) {
-          const px = x + ((t * 9) % 44) + drift * 0.3
-          const py = y + ((t * 5) % 44)
-          const near = Math.hypot(px - W / 2, py - H / 2)
-          const r = near < 300 ? 1.6 : 1
-          ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill()
-        }
-      }
+      // the whole backdrop in one blit, nudged a pixel or two so it still breathes
+      ctx.drawImage(bake, Math.sin(t * 0.5) * 3, Math.cos(t * 0.4) * 2)
 
       const scene = list.length ? sceneAt(list, t) : null
       if (!scene) { raf = requestAnimationFrame(draw); return }
       const local = t - scene.start
-      const prev = list[list.indexOf(scene) - 1]
+      const drift = Math.sin(t * 0.35) * 16
 
-      // ghost letter behind the type
+      // ghost letter
       const ghost = ghostWord(scene.line.text)
       if (ghost) {
         ctx.save()
-        ctx.globalAlpha = grade === 'paper' ? 0.05 : 0.07
+        ctx.globalAlpha = grade === 'paper' ? 0.045 : 0.07
         ctx.fillStyle = p.ink
         ctx.font = '800 420px "Bricolage Grotesque", Manrope, sans-serif'
         ctx.textAlign = 'center'
@@ -114,26 +139,19 @@ export default function Film() {
         ctx.restore()
       }
 
-      // ---------- transition: mask wipe between shots
       const wipe = Math.min(1, local / 0.3)
       ctx.save()
       if (wipe < 1) {
         const edge = W * (0.5 + 0.5 * ease('plain', wipe))
-        ctx.beginPath()
-        ctx.rect(W / 2 - edge / 2, 0, edge, H)
-        ctx.clip()
+        ctx.beginPath(); ctx.rect(W / 2 - edge / 2, 0, edge, H); ctx.clip()
       }
 
-      // camera: slow drift plus a per-kind push
-      const camX = Math.sin(t * 0.6) * 6
-      const camY = Math.cos(t * 0.45) * 4
       const zoom = 1 + (scene.zoom - 1) * Math.min(1, local / 0.7) + (1 - ease('plain', wipe)) * 0.04
-      ctx.translate(W / 2 + camX, H / 2 + camY)
+      ctx.translate(W / 2 + Math.sin(t * 0.6) * 6, H / 2 + Math.cos(t * 0.45) * 4)
       ctx.scale(zoom, zoom)
       ctx.translate(-W / 2, -H / 2)
 
-      // ---------- type: per-word mask reveal with spring
-      scene.words.forEach((word, wi) => {
+      scene.words.forEach((word) => {
         const enter = Math.max(0, Math.min(1, (local - word.enter) / 0.5))
         if (enter <= 0) return
         const isVague = scene.line.kind === 'vague'
@@ -143,32 +161,17 @@ export default function Film() {
 
         ctx.save()
         ctx.globalAlpha = fade
-        // mask reveal: clip to the word's own box so it appears to rise out of the baseline
-        ctx.beginPath()
-        ctx.rect(word.x - 6, word.y - word.size * 1.1, W, word.size * 1.35)
-        ctx.clip()
         ctx.translate(word.x, word.y + rise)
         ctx.rotate(word.rotate * (1 - e))
 
         const colour = scene.line.kind === 'number' ? p.number : isVague ? p.vague : scene.line.kind === 'specific' ? p.accent : p.ink
-        if (isVague) ctx.filter = `blur(${(1 - fade) * 3}px)`
         ctx.fillStyle = colour
         ctx.font = `${word.weight} ${word.size}px ${scene.line.kind === 'number' ? '"Bricolage Grotesque", Manrope' : 'Manrope'}, sans-serif`
         ctx.fillText(word.text, 0, 0)
-        ctx.filter = 'none'
 
-        // bloom pass: same word into the small buffer
-        if (scene.line.kind === 'number' || scene.line.kind === 'specific') {
-          bctx.fillStyle = colour
-          bctx.font = `${word.weight} ${word.size / 3}px ${scene.line.kind === 'number' ? '"Bricolage Grotesque", Manrope' : 'Manrope'}, sans-serif`
-          bctx.globalAlpha = 0.9 * fade
-          bctx.fillText(word.text, (word.x + (wi % 2 ? 0 : 0)) / 3, (word.y + rise) / 3)
-          bctx.globalAlpha = 1
-        }
         ctx.restore()
       })
 
-      // ---------- motif per kind
       const prog = Math.min(1, local / Math.max(0.5, scene.dur * 0.8))
       if (scene.motif === 'ring') {
         ctx.strokeStyle = p.accent
@@ -177,7 +180,6 @@ export default function Film() {
         ctx.lineDashOffset = 520 * (1 - prog)
         ctx.beginPath(); ctx.arc(W / 2, H / 2, 232, -Math.PI * 0.8, Math.PI * 0.8); ctx.stroke()
         ctx.setLineDash([])
-        // growth bar under the number
         ctx.fillStyle = p.accent
         ctx.fillRect(96, H / 2 + 120, (W - 192) * 0.55 * ease('number', prog), 6)
       }
@@ -186,7 +188,6 @@ export default function Film() {
         ctx.strokeStyle = p.accent
         ctx.lineWidth = 3
         ctx.beginPath(); ctx.moveTo(96, H / 2 + 66); ctx.lineTo(96 + w, H / 2 + 66); ctx.stroke()
-        ctx.fillStyle = p.accent
         ctx.beginPath(); ctx.arc(96 + w, H / 2 + 66, 4, 0, Math.PI * 2); ctx.fill()
       }
       if (scene.motif === 'rail') {
@@ -195,20 +196,19 @@ export default function Film() {
         ctx.beginPath(); ctx.moveTo(96, H / 2 + 70); ctx.lineTo(96 + (W - 192) * ease('plain', prog), H / 2 + 70); ctx.stroke()
       }
       if (scene.motif === 'smoke') {
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 24; i++) {
           const r = rand(i, 3)
-          const r2 = rand(i, 9)
-          ctx.globalAlpha = Math.max(0, 0.24 - local * 0.1) * (0.35 + r)
+          ctx.globalAlpha = Math.max(0, 0.22 - local * 0.1) * (0.35 + r)
           ctx.fillStyle = p.vague
           ctx.beginPath()
-          ctx.arc(150 + r * (W - 300) + Math.sin(local * 1.4 + i) * 26, H / 2 - 20 - local * 38 * (0.3 + r2), 1 + r2 * 3.4, 0, Math.PI * 2)
+          ctx.arc(150 + r * (W - 300) + Math.sin(local * 1.4 + i) * 24, H / 2 - 20 - local * 36 * (0.3 + r), 1 + r * 3, 0, Math.PI * 2)
           ctx.fill()
         }
         ctx.globalAlpha = 1
       }
       ctx.restore()
 
-      // ---------- shot furniture
+      // furniture
       ctx.save()
       ctx.globalAlpha = Math.min(1, local / 0.4)
       ctx.fillStyle = p.muted
@@ -221,16 +221,6 @@ export default function Film() {
       ctx.fillText(t.toFixed(1) + 's', W - 96, 84)
       ctx.restore()
 
-      // ---------- bloom composite
-      ctx.save()
-      ctx.globalCompositeOperation = 'lighter'
-      ctx.globalAlpha = grade === 'paper' ? 0.35 : 0.5
-      ctx.filter = 'blur(14px)'
-      ctx.drawImage(bloom, 0, 0, W, H)
-      ctx.filter = 'none'
-      ctx.restore()
-
-      // ---------- end card
       if (t > 16.4) {
         ctx.globalAlpha = Math.min(1, (t - 16.4) / 0.5)
         ctx.fillStyle = p.bg
@@ -249,7 +239,6 @@ export default function Film() {
         ctx.globalAlpha = 1
       }
 
-      // ---------- rail
       const railY = H - 40
       ctx.fillStyle = p.line
       ctx.fillRect(96, railY, W - 192, 2)
@@ -261,25 +250,15 @@ export default function Film() {
         ctx.fillRect(x, railY - 2, Math.max(2, w - 4), active ? 7 : 2)
       })
 
-      // ---------- grain + vignette
-      if (grain.current?.complete) {
-        ctx.globalAlpha = p.grain
-        ctx.globalCompositeOperation = 'overlay'
-        const pat = ctx.createPattern(grain.current, 'repeat')
-        if (pat) { ctx.fillStyle = pat; ctx.fillRect(0, 0, W, H) }
-        ctx.globalCompositeOperation = 'source-over'
-        ctx.globalAlpha = 1
-      }
-      const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, H)
-      vig.addColorStop(0, 'rgba(0,0,0,0)')
-      vig.addColorStop(1, grade === 'paper' ? 'rgba(18,21,26,0.07)' : 'rgba(0,0,0,0.5)')
-      ctx.fillStyle = vig
-      ctx.fillRect(0, 0, W, H)
-
-      // DOM updates without React
       if (scrub.current && document.activeElement !== scrub.current) scrub.current.value = String(t)
       if (clock.current) clock.current.textContent = `${t.toFixed(1)}s`
-      void prev
+
+      frames++
+      if (now - fpsAt > 500) {
+        if (fpsRef.current) fpsRef.current.textContent = `${Math.round((frames * 1000) / (now - fpsAt))}fps`
+        frames = 0
+        fpsAt = now
+      }
 
       raf = requestAnimationFrame(draw)
     }
@@ -355,6 +334,7 @@ export default function Film() {
                 onChange={(e) => { time.current = Number(e.target.value); playing.current = false; setUiPlaying(false) }}
                 className="min-w-[140px] flex-1 accent-[#ff4b26]" />
               <span ref={clock} className="w-10 font-mono text-[10px] font-bold tabular-nums">0.0s</span>
+              <span ref={fpsRef} className="w-9 font-mono text-[9px] font-bold text-ink-3">–</span>
               <button type="button" onClick={record} disabled={recording}
                 className="inline-flex items-center gap-1 rounded-md border-2 border-ink bg-c2 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-wider shadow-[2px_2px_0_var(--color-ink)] disabled:opacity-60">
                 <Download className="h-3 w-3" /> {recording ? 'rec' : '.webm'}
