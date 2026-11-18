@@ -92,6 +92,21 @@ export default function Film() {
       bc.globalAlpha = 1
     }
 
+    // perspective floor: horizon lines converging to a vanishing point
+    const horizon = H * 0.62
+    bc.strokeStyle = grade === 'paper' ? 'rgba(18,21,26,0.10)' : 'rgba(255,255,255,0.08)'
+    bc.lineWidth = 1
+    for (let i = -8; i <= 8; i++) {
+      bc.beginPath()
+      bc.moveTo(W / 2 + i * 40, horizon)
+      bc.lineTo(W / 2 + i * 320, H)
+      bc.stroke()
+    }
+    for (let i = 1; i <= 6; i++) {
+      const y = horizon + Math.pow(i / 6, 2.2) * (H - horizon)
+      bc.beginPath(); bc.moveTo(0, y); bc.lineTo(W, y); bc.stroke()
+    }
+
     // vignette baked in
     const vig = bc.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, H)
     vig.addColorStop(0, 'rgba(0,0,0,0)')
@@ -151,44 +166,65 @@ export default function Film() {
       ctx.scale(zoom, zoom)
       ctx.translate(-W / 2, -H / 2)
 
-      scene.words.forEach((word) => {
-        const enter = Math.max(0, Math.min(1, (local - word.enter) / 0.5))
-        if (enter <= 0) return
-        const isVague = scene.line.kind === 'vague'
-        const e = scene.line.kind === 'number' ? spring(enter) : ease(scene.line.kind, enter)
-        const rise = (1 - e) * word.size * 0.9
-        const fade = isVague ? Math.max(0, 1 - Math.max(0, local - 0.9) / 1.2) : 1
-
+      // a wireframe cube turning behind the type: cheap (12 lines) and gives depth
+      {
+        const spin = t * 0.55 + scene.start * 0.3
+        const cx = W / 2 + Math.sin(t * 0.4) * 40
+        const cy = H / 2 + Math.cos(t * 0.33) * 24
+        const r = 190 + Math.sin(t * 0.7) * 8
+        const rot = (x: number, y: number, z: number) => {
+          const cy1 = Math.cos(spin), sy1 = Math.sin(spin)
+          const x1 = x * cy1 - z * sy1
+          const z1 = x * sy1 + z * cy1
+          const cy2 = Math.cos(spin * 0.7), sy2 = Math.sin(spin * 0.7)
+          const y1 = y * cy2 - z1 * sy2
+          const z2 = y * sy2 + z1 * cy2
+          const p2 = 320 / (320 + z2)
+          return { x: cx + x1 * p2, y: cy + y1 * p2 }
+        }
+        const v = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]]
+          .map(([x, y, z]) => rot(x * r * 0.55, y * r * 0.55, z * r * 0.55))
+        const edges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]
         ctx.save()
-        ctx.globalAlpha = fade
-        ctx.translate(word.x, word.y + rise)
-        ctx.rotate(word.rotate * (1 - e))
-
-        const colour = scene.line.kind === 'number' ? p.number : isVague ? p.vague : scene.line.kind === 'specific' ? p.accent : p.ink
-        ctx.fillStyle = colour
-        ctx.font = `${word.weight} ${word.size}px ${scene.line.kind === 'number' ? '"Bricolage Grotesque", Manrope' : 'Manrope'}, sans-serif`
-        ctx.fillText(word.text, 0, 0)
-
+        ctx.globalAlpha = grade === 'paper' ? 0.13 : 0.2
+        ctx.strokeStyle = p.accent
+        ctx.lineWidth = 1.4
+        edges.forEach(([a, b]) => {
+          ctx.beginPath(); ctx.moveTo(v[a].x, v[a].y); ctx.lineTo(v[b].x, v[b].y); ctx.stroke()
+        })
         ctx.restore()
-      })
+      }
 
       const prog = Math.min(1, local / Math.max(0.5, scene.dur * 0.8))
       if (scene.motif === 'ring') {
+        // a gauge: track, filled arc and a needle that settles
+        const gx = W / 2
+        const gy = H * 0.86
+        const gr = 150
+        ctx.strokeStyle = p.line
+        ctx.lineWidth = 8
+        ctx.beginPath(); ctx.arc(gx, gy, gr, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke()
         ctx.strokeStyle = p.accent
+        ctx.lineWidth = 8
+        ctx.beginPath(); ctx.arc(gx, gy, gr, Math.PI * 1.12, Math.PI * (1.12 + 0.76 * ease('number', prog))); ctx.stroke()
+        const ang = Math.PI * (1.12 + 0.76 * ease('number', prog))
+        ctx.strokeStyle = p.ink
         ctx.lineWidth = 3
-        ctx.setLineDash([520, 520])
-        ctx.lineDashOffset = 520 * (1 - prog)
-        ctx.beginPath(); ctx.arc(W / 2, H / 2, 232, -Math.PI * 0.8, Math.PI * 0.8); ctx.stroke()
-        ctx.setLineDash([])
-        ctx.fillStyle = p.accent
-        ctx.fillRect(96, H / 2 + 120, (W - 192) * 0.55 * ease('number', prog), 6)
+        ctx.beginPath()
+        ctx.moveTo(gx + Math.cos(ang) * (gr - 26), gy + Math.sin(ang) * (gr - 26))
+        ctx.lineTo(gx + Math.cos(ang) * (gr + 14), gy + Math.sin(ang) * (gr + 14))
+        ctx.stroke()
       }
       if (scene.motif === 'sweep') {
-        const w = (W - 192) * ease('specific', prog)
-        ctx.strokeStyle = p.accent
-        ctx.lineWidth = 3
-        ctx.beginPath(); ctx.moveTo(96, H / 2 + 66); ctx.lineTo(96 + w, H / 2 + 66); ctx.stroke()
-        ctx.beginPath(); ctx.arc(96 + w, H / 2 + 66, 4, 0, Math.PI * 2); ctx.fill()
+        // three bars growing under the line, like a small chart
+        const baseY = H - 120
+        const barW = 34
+        ;[0.55, 0.85, 0.7].forEach((h, i) => {
+          const grow = ease('specific', Math.min(1, prog * 1.4 - i * 0.15))
+          const bh = 110 * h * Math.max(0, grow)
+          ctx.fillStyle = i === 2 ? p.accent : p.line
+          ctx.fillRect(96 + i * (barW + 12), baseY - bh, barW, bh)
+        })
       }
       if (scene.motif === 'rail') {
         ctx.strokeStyle = p.accent
@@ -206,7 +242,51 @@ export default function Film() {
         }
         ctx.globalAlpha = 1
       }
+      scene.words.forEach((word) => {
+        const enter = Math.max(0, Math.min(1, (local - word.enter) / 0.5))
+        if (enter <= 0) return
+        const isVague = scene.line.kind === 'vague'
+        const e = scene.line.kind === 'number' ? spring(enter) : ease(scene.line.kind, enter)
+        const rise = (1 - e) * word.size * 0.9
+        const fade = isVague ? Math.max(0, 1 - Math.max(0, local - 0.9) / 1.2) : 1
+
+        ctx.save()
+        ctx.globalAlpha = fade
+        ctx.translate(word.x, word.y + rise)
+        ctx.rotate(word.rotate * (1 - e))
+
+        const colour = scene.line.kind === 'number' ? p.number : isVague ? p.vague : scene.line.kind === 'specific' ? p.accent : p.ink
+        const font = `${word.weight} ${word.size}px ${scene.line.kind === 'number' ? '"Bricolage Grotesque", Manrope' : 'Manrope'}, sans-serif`
+        ctx.font = font
+        // extruded depth: two offset copies read as a solid letterform
+        const depth = scene.line.kind === 'number' || scene.line.kind === 'specific' ? 4 : 2
+        ctx.globalAlpha = fade * 0.22
+        ctx.fillStyle = p.ink
+        ctx.fillText(word.text, depth, depth)
+        ctx.fillText(word.text, depth * 0.5, depth * 0.5)
+        ctx.globalAlpha = fade
+        ctx.fillStyle = colour
+        ctx.fillText(word.text, 0, 0)
+
+        ctx.restore()
+      })
+
       ctx.restore()
+
+      // a light sweep crossing the frame once per shot
+      {
+        const k = Math.min(1, local / Math.max(0.8, scene.dur))
+        const x = -300 + k * (W + 600)
+        const sweep = ctx.createLinearGradient(x - 220, 0, x + 220, H)
+        sweep.addColorStop(0, 'rgba(255,255,255,0)')
+        sweep.addColorStop(0.5, grade === 'paper' ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.10)')
+        sweep.addColorStop(1, 'rgba(255,255,255,0)')
+        ctx.save()
+        ctx.globalCompositeOperation = 'overlay'
+        ctx.fillStyle = sweep
+        ctx.fillRect(0, 0, W, H)
+        ctx.restore()
+      }
 
       // furniture
       ctx.save()
