@@ -1,17 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Kinetic } from '@/lab/Kinetic'
 import { LightTrails } from '@/lab/LightTrails'
 import { Zoetrope } from '@/lab/Zoetrope'
 
 const PIECES = [
-  { id: 'kinetic', name: 'Kinetic film', note: 'your answer, as motion', render: () => <Kinetic /> },
   { id: 'trails', name: 'Light trails', note: 'a month as one exposure', render: () => <LightTrails /> },
   { id: 'zoetrope', name: 'Zoetrope', note: 'twelve frames on a drum', render: () => <Zoetrope /> }
 ]
 
 export default function Lab() {
-  const [id, setId] = useState('kinetic')
+  const [id, setId] = useState('trails')
   const piece = PIECES.find((p) => p.id === id) ?? PIECES[0]
 
   return (
@@ -20,8 +18,8 @@ export default function Lab() {
         <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
           <div>
             <span className="chip bg-ink text-paper">Lab</span>
-            <h1 className="mt-1 font-display text-xl font-extrabold tracking-tight">Three pieces</h1>
-            <p className="text-[11.5px] font-medium text-ink-3">a film, a photograph, an animation machine</p>
+            <h1 className="mt-1 font-display text-xl font-extrabold tracking-tight">Two pieces</h1>
+            <p className="text-[11.5px] font-medium text-ink-3">a photograph and an animation machine</p>
           </div>
           <Link to="/negotiate" className="font-mono text-[9px] font-bold uppercase tracking-wider text-ink-3 underline underline-offset-4">promoted tools →</Link>
         </div>
