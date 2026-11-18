@@ -123,3 +123,21 @@ export function grainTile(size = 128): string {
   ctx.putImageData(img, 0, 0)
   return c.toDataURL()
 }
+
+/** Spring-ish overshoot used for type that should feel physical. */
+export const spring = (x: number, tension = 1.1) => {
+  const p = Math.max(0, Math.min(1, x))
+  return 1 - Math.cos(p * Math.PI * 1.5) * Math.exp(-p * 4.2) * tension * 0.6
+}
+
+/** Deterministic pseudo-random for particles that do not jitter between frames. */
+export const rand = (i: number, salt = 0) => {
+  const s = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453
+  return s - Math.floor(s)
+}
+
+/** Big ghost letters that sit behind the type and drift. */
+export const ghostWord = (line: string) => {
+  const words = line.split(/\s+/).filter((w) => w.length > 4)
+  return (words[0] ?? line.split(/\s+/)[0] ?? '').replace(/[^a-zA-Z]/g, '').slice(0, 9).toUpperCase()
+}
