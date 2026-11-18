@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpen, Handshake, RotateCcw, Search, Sparkles, Users, Volume2, VolumeX, ChevronRight } from 'lucide-react'
+import { ArrowRight, BookOpen, Film, Handshake, RotateCcw, Search, Sparkles, Users, Volume2, VolumeX, ChevronRight } from 'lucide-react'
 import { tracks } from '@/data/tracks'
 import { games } from '@/data/games'
 import { guides } from '@/data/guides'
@@ -16,7 +16,14 @@ export default function Menu() {
   const shownTracks = useMemo(() => tracks.filter((t) => match(t.name) || match(t.blurb)), [q])
   const shownGames = useMemo(() => games.filter((g) => match(g.name) || match(g.skill)), [q])
   const shownGuides = useMemo(() => guides.filter((g) => match(g.title) || match(g.kicker)), [q])
-  const nothing = q && !shownTracks.length && !shownGames.length && !shownGuides.length
+  const TOOLS = [
+    { to: '/interview', name: 'The interview', note: 'twelve questions · three scorecards', icon: Sparkles, colour: 'bg-c3' },
+    { to: '/gd', name: 'Group discussion', note: 'six at a table · scored on six criteria', icon: Users, colour: 'bg-c2' },
+    { to: '/negotiate', name: 'Negotiation', note: 'hidden ceiling · ten moves', icon: Handshake, colour: 'bg-c3' },
+    { to: '/film', name: 'Answer film', note: 'your answer as motion graphics', icon: Film, colour: 'bg-c1' }
+  ]
+  const shownTools = TOOLS.filter((t) => match(t.name) || match(t.note))
+  const nothing = q && !shownTracks.length && !shownGames.length && !shownGuides.length && !shownTools.length
   const resume = lastRound ? tracks.find((t) => t.id === lastRound) : null
 
   const onSound = () => {
@@ -35,6 +42,27 @@ export default function Menu() {
           Five rounds, six games and six guides — the whole map on one page. Your scores are read from this device.
         </p>
       </header>
+
+      {shownTools.length > 0 && (
+        <section className="mt-5">
+          <h2 className="mono-label mb-2">Tools</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {shownTools.map((t) => (
+              <Link key={t.to} to={t.to}
+                className="flex items-center gap-3 rounded-xl border-2 border-ink bg-card px-3 py-2.5 shadow-[3px_3px_0_var(--color-ink)] transition-transform hover:-translate-y-0.5">
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink ${t.colour}`}>
+                  <t.icon className="h-4 w-4" />
+                </span>
+                <span className="grid min-w-0 flex-1 gap-0.5">
+                  <span className="text-[13.5px] font-extrabold leading-tight">{t.name}</span>
+                  <span className="mono-label">{t.note}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-ink-3" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <label className="mt-5 block max-w-[560px]">
         <span className="mono-label">Search everything</span>
@@ -107,43 +135,7 @@ export default function Menu() {
       </section>
 
       <section className={`mt-8 ${q ? 'hidden' : ''}`}>
-        <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Test</h2>
-        <Link
-          to="/interview"
-          className="mb-2 flex max-w-[620px] items-center gap-3 rounded-xl border-2 border-ink bg-ink px-3.5 py-3 text-paper shadow-[3px_3px_0_var(--color-ink)]"
-        >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink bg-c3">
-            <Sparkles className="h-4 w-4 text-ink" />
-          </span>
-          <span className="grid min-w-0 flex-1 gap-0.5">
-            <span className="text-[14px] font-extrabold">The interview · illustrated scene</span>
-            <span className="mono-label text-white/60">10 questions · three scorecards · model answers</span>
-          </span>
-        </Link>
-        <Link
-          to="/negotiate"
-          className="mb-2 flex max-w-[620px] items-center gap-3 rounded-xl border-2 border-ink bg-ink px-3.5 py-3 text-paper shadow-[3px_3px_0_var(--color-ink)]"
-        >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink bg-c3">
-            <Handshake className="h-4 w-4 text-ink" />
-          </span>
-          <span className="grid min-w-0 flex-1 gap-0.5">
-            <span className="text-[14px] font-extrabold">Negotiation · salary tool</span>
-            <span className="mono-label text-white/60">hidden ceiling · ten moves · the offer letter at the end</span>
-          </span>
-        </Link>
-        <Link
-          to="/gd"
-          className="mb-2 flex max-w-[620px] items-center gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-3 shadow-[3px_3px_0_var(--color-ink)]"
-        >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border-2 border-ink bg-c2">
-            <Users className="h-4 w-4 text-white" />
-          </span>
-          <span className="grid min-w-0 flex-1 gap-0.5">
-            <span className="text-[14px] font-extrabold">Group discussion · illustrated scene</span>
-            <span className="mono-label">eight at a table · scored on five parameters</span>
-          </span>
-        </Link>
+        <h2 className="mb-2.5 font-display text-xl font-extrabold tracking-tight">Full mock</h2>
         <Link
           to="/mock"
           className="flex max-w-[560px] items-center gap-3 rounded-xl border-2 border-ink bg-card px-3.5 py-3 shadow-[3px_3px_0_var(--color-ink)]"
