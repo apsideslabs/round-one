@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Rubik } from '@/lab/Rubik'
 
 /**
  * The workspace: a blank stage. Experiments live here until they are good
@@ -20,23 +21,19 @@ export default function Lab() {
           backgroundSize: '22px 22px'
         }}
       />
-      <div className="relative grid min-h-[calc(100dvh-4rem)] place-items-center px-6">
-        <div className="max-w-[440px] text-center">
-          <span className="chip bg-ink text-paper">Workspace</span>
-          <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight">An empty stage</h1>
-          <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-ink-3">
-            Nothing is built here right now. Every experiment has either been promoted into the app or deleted.
-          </p>
-          <p className="mt-3 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3">
-            lab first · nothing ships until it is kept here
-          </p>
-          {kept.length > 0 && (
-            <p className="mt-2 text-[11.5px] font-medium text-ink-3">shortlist: {kept.join(' · ')}</p>
-          )}
-          <Link to="/negotiate" className="mt-4 inline-block rounded-lg border-2 border-ink bg-c1 px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-[2px_2px_0_var(--color-ink)]">
-            see what was promoted →
-          </Link>
+      <div className="relative mx-auto grid h-[calc(100dvh-4rem)] max-w-[1100px] grid-rows-[auto_1fr] px-3 py-3">
+        <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <span className="chip bg-ink text-paper">Lab</span>
+            <h1 className="mt-1 font-display text-xl font-extrabold tracking-tight">Rubik's cube</h1>
+            <p className="text-[11.5px] font-medium text-ink-3">CSS 3D · spring-snapped turns · inertial orbit</p>
+          </div>
+          <Link to="/negotiate" className="font-mono text-[9px] font-bold uppercase tracking-wider text-ink-3 underline underline-offset-4">promoted tools →</Link>
         </div>
+        <div className="min-h-0 overflow-hidden rounded-2xl border-[3px] border-ink bg-[#f7f5ee] shadow-[6px_6px_0_var(--color-ink)]">
+          <Rubik />
+        </div>
+        <div className="hidden">{kept.join('·')}{<Link to="/negotiate">promoted</Link>}</div>
       </div>
     </div>
   )
